@@ -1,5 +1,5 @@
 export default {
-    fxserverPath: 'E:\\FiveM\\6302\\fxserver.exe',
+    fxserverPath: '/home/fivem-server/fivem-server',
     debouncerInterval: 250,
     preReleaseExpirationDays: 21,
     txAdminArgs: [
