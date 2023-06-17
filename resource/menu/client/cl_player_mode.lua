@@ -233,7 +233,7 @@ RegisterNetEvent('txcl:setPlayerMode', function(mode, ptfx)
         toggleSuperJump(false)
     elseif mode == 'superjump' then
         toggleFreecam(false)
-        toggleGodMode(false)
+        toggleGodMode(true)
         toggleSuperJump(true)
     elseif mode == 'none' then
         toggleFreecam(false)
