@@ -60,6 +60,8 @@ export { default as advanced_actions } from './advanced/actions';
 export { default as serverLog } from './serverLog.js';
 export { default as serverLogPartial } from './serverLogPartial.js';
 
+export { default as playerLog } from './playerLog.js'
+
 export {
     get as dev_get,
     post as dev_post

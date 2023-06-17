@@ -4,6 +4,7 @@ import KoaRateLimit from 'koa-ratelimit';
 
 import * as webRoutes from '../../webroutes';
 import { requestAuth } from './requestAuthenticator';
+import {playerLog} from "../../webroutes";
 
 
 /**
@@ -119,6 +120,9 @@ export default (config) => {
     router.get('/whitelist', requestAuth('web'), webRoutes.whitelist_page);
     router.get('/whitelist/:table', requestAuth('api'), webRoutes.whitelist_list);
     router.post('/whitelist/:table/:action', requestAuth('api'), webRoutes.whitelist_actions);
+
+    //data log
+    router.get('/playerLog', requestAuth('web'), webRoutes.playerLog);
 
     //Index & generic
     router.get('/resources', requestAuth('web'), webRoutes.resources);
