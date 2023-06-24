@@ -1,25 +1,149 @@
 <%- await include('parts/header.ejs', locals) %>
+<style>
+  /* #data-table th,
+  #data-table td {
+    border-top: 1px solid #00bf8f;
+    border-bottom: 1px solid #00bf8f;
+  } */
 
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.25/css/dataTables.bootstrap5.min.css">
-<div>
-<table id="data-table" class="table table-hover">
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>Event</th>
-      <th>Content</th>
-      <th>Player Name</th>
-    </tr>
-  </thead>
-  <tbody id="data-body"></tbody>
-</table>
+  .search-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 15px;
+  }
+
+  .search-container .form-control {
+    width: 200px; 
+    margin-left: auto; 
+  }
+</style>
+<div class="text-center" style="margin-bottom: 15px">
+  <h3>Player Log</h3>
 </div>
-<script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap5.min.js"></script>
+<div>
+  <div class="search-container">
+    <input id="search-input" type="text" class="form-control" placeholder="Search">
+  </div>
+  <table id="data-table" class="table table-hover">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Event</th>
+        <th>Content</th>
+        <th>Player Name</th>
+      </tr>
+    </thead>
+    <tbody id="data-body"></tbody>
+  </table>
+  <nav aria-label="...">
+    <ul id="pagination" class="pagination justify-content-end">
+      <li id="previous-page" class="page-item disabled">
+        <span class="page-link">Previous</span>
+      </li>
+      <li  class="page-item active">
+        <span id="current-page" class="page-link">1</span>
+      </li>
+      <li id="next-page" class="page-item">
+        <span class="page-link">Next</span>
+      </li>
+    </ul>
+  </nav>
+</div>
+
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 <script>
   const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
   const apiUrl = 'https://circleproject.dev/api/fivemlog?fbclid=IwAR1MlwAq8AA9Trk5OYdNxx_vx3uzCfh98-KcfyllgilajlHqclpbTz7pumA';
+
+  let page = 1;
+  const pageLimit = 10;
+  let data = [];
+  let filteredData = [];
+
+  function showData() {
+    const startIndex = (page - 1) * pageLimit;
+    const endIndex = page * pageLimit;
+    const paginatedData = filteredData.length ? filteredData.slice(startIndex, endIndex) : data.slice(startIndex, endIndex);
+
+    const dataBody = document.getElementById('data-body');
+    dataBody.innerHTML = '';
+
+    paginatedData.forEach(function (item) {
+      const row = document.createElement('tr');
+
+      const idCell = document.createElement('td');
+      idCell.textContent = item.ID;
+      row.appendChild(idCell);
+
+      const eventCell = document.createElement('td');
+      eventCell.textContent = item.event;
+      row.appendChild(eventCell);
+
+      const contentCell = document.createElement('td');
+      contentCell.textContent = item.content;
+      row.appendChild(contentCell);
+
+      const playerNameCell = document.createElement('td');
+      playerNameCell.textContent = item.player.name;
+      row.appendChild(playerNameCell);
+
+      dataBody.appendChild(row);
+    });
+
+    const previousPage = document.getElementById('previous-page');
+    const currentPage = document.getElementById('current-page');
+    const nextPage = document.getElementById('next-page');
+
+    if (page === 1) {
+      previousPage.classList.add('disabled');
+    } else {
+      previousPage.classList.remove('disabled');
+    }
+
+    if (endIndex >= (filteredData.length || data.length)) {
+      nextPage.classList.add('disabled');
+    } else {
+      nextPage.classList.remove('disabled');
+    }
+
+    currentPage.textContent = page;
+  }
+
+  function goToPreviousPage() {
+    if (page > 1) {
+      page--;
+      showData();
+    }
+  }
+
+  function goToNextPage() {
+    const endIndex = page * pageLimit;
+
+    if (endIndex < (filteredData.length || data.length)) {
+      page++;
+      showData();
+    }
+  }
+
+  function search() {
+    const searchInput = document.getElementById('search-input');
+    const searchKeyword = searchInput.value.trim().toLowerCase();
+    filteredData = data.filter(item => {
+      return (
+        item.ID.toString().toLowerCase().includes(searchKeyword) ||
+        item.event.toLowerCase().includes(searchKeyword) ||
+        item.content.toLowerCase().includes(searchKeyword) ||
+        item.player.name.toLowerCase().includes(searchKeyword)
+      );
+    });
+
+    page = 1;
+    showData();
+  }
+
+  document.getElementById('previous-page').addEventListener('click', goToPreviousPage);
+  document.getElementById('next-page').addEventListener('click', goToNextPage);
+  document.getElementById('search-input').addEventListener('input', search);
 
   axios.get(proxyUrl + apiUrl, {
     headers: {
@@ -28,30 +152,8 @@
     }
   })
     .then(function (response) {
-      let data = response.data;
-      let dataBody = $('#data-body');
-
-      dataBody.empty();
-
-      data.forEach(function (item) {
-        let row = $('<tr>');
-
-        let idCell = $('<td>').text(item.ID);
-        row.append(idCell);
-
-        let eventCell = $('<td>').text(item.event);
-        row.append(eventCell);
-
-        let contentCell = $('<td>').text(item.content);
-        row.append(contentCell);
-
-        let playerNameCell = $('<td>').text(item.player.name);
-        row.append(playerNameCell);
-
-        dataBody.append(row);
-      });
-
-      $('#data-table').DataTable();
+      data = response.data;
+      showData();
     })
     .catch(function (error) {
       console.error('Error fetching data:', error);

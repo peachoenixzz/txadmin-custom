@@ -1,8 +1,6 @@
 <%- await include('parts/header.ejs', locals) %>
-
-<div>test jaaa</div>
-<%- await include('parts/header.ejs', locals) %>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.6/flowbite.min.css"  rel="stylesheet" />
+<div style="overflow: scroll;">
 <div class="relative overflow-x-auto  sm:rounded-lg">
   <div class="flex items-center justify-between pb-4">
       <div>
@@ -75,6 +73,7 @@
       </thead>
   <tbody id="data-body"></tbody>
 </table>
+</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.6/flowbite.min.js"></script>
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 <script>
@@ -125,6 +124,5 @@
     });
 </script>
 
-<%- await include('parts/footer.ejs', locals) %>
 
 <%- await include('parts/footer.ejs', locals) %>
