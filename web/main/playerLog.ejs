@@ -5,7 +5,13 @@
     border-top: 1px solid #00bf8f;
     border-bottom: 1px solid #00bf8f;
   } */
+ 
 
+  /* Update the CSS for the table cells */
+  #data-table td {
+    width: calc(100% / 6); /* Divide the width equally among the 6 columns */
+    text-align: left; /* Adjust the text alignment if needed */
+  }
   .search-container {
     display: flex;
     justify-content: flex-end;
@@ -24,10 +30,13 @@
   <div class="search-container">
     <input id="search-input" type="text" class="form-control" placeholder="Search">
   </div>
+  <div style="overflow-x: scroll;">
   <table id="data-table" class="table table-hover">
     <thead>
       <tr>
-        <th>ID</th>
+        <th>Steam</th>
+        <th>Discord</th>
+        <th>License</th>
         <th>Event</th>
         <th>Content</th>
         <th>Player Name</th>
@@ -35,6 +44,7 @@
     </thead>
     <tbody id="data-body"></tbody>
   </table>
+</div>
   <nav aria-label="...">
     <ul id="pagination" class="pagination justify-content-end">
       <li id="previous-page" class="page-item disabled">
@@ -71,9 +81,17 @@
     paginatedData.forEach(function (item) {
       const row = document.createElement('tr');
 
-      const idCell = document.createElement('td');
-      idCell.textContent = item.ID;
-      row.appendChild(idCell);
+      const steamCell = document.createElement('td');
+      steamCell.textContent = item.player.identifiers.steam;
+      row.appendChild(steamCell);
+
+      const discordCell = document.createElement('td');
+      discordCell.textContent = item.player.identifiers.discord;
+      row.appendChild(discordCell);
+
+      const licenseCell = document.createElement('td');
+      licenseCell.textContent = item.player.identifiers.license;
+      row.appendChild(licenseCell);
 
       const eventCell = document.createElement('td');
       eventCell.textContent = item.event;
@@ -126,20 +144,23 @@
   }
 
   function search() {
-    const searchInput = document.getElementById('search-input');
-    const searchKeyword = searchInput.value.trim().toLowerCase();
-    filteredData = data.filter(item => {
-      return (
-        item.ID.toString().toLowerCase().includes(searchKeyword) ||
-        item.event.toLowerCase().includes(searchKeyword) ||
-        item.content.toLowerCase().includes(searchKeyword) ||
-        item.player.name.toLowerCase().includes(searchKeyword)
-      );
-    });
+  const searchInput = document.getElementById('search-input');
+  const searchKeyword = searchInput.value.trim().toLowerCase();
+  filteredData = data.filter(item => {
+    return (
+      item.player.identifiers.steam.toString().toLowerCase().includes(searchKeyword) ||
+      item.player.identifiers.discord.toString().toLowerCase().includes(searchKeyword) ||
+      item.player.identifiers.license.toString().toLowerCase().includes(searchKeyword) ||
+      item.event.toLowerCase().includes(searchKeyword) ||
+      item.content.toLowerCase().includes(searchKeyword) ||
+      item.player.name.toLowerCase().includes(searchKeyword)
+    );
+  });
 
-    page = 1;
-    showData();
-  }
+  page = 1;
+  showData();
+}
+
 
   document.getElementById('previous-page').addEventListener('click', goToPreviousPage);
   document.getElementById('next-page').addEventListener('click', goToNextPage);
