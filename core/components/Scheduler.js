@@ -5,7 +5,7 @@ const console = consoleFactory(modulename);
 
 
 //Helpers
-const scheduleWarnings = [30, 15, 10, 5, 4, 3, 2, 1];
+const scheduleWarnings = [30, 15, 10, 5];
 
 /**
  * Processes an array of HH:MM, gets the next timestamp (sorted by closest).
