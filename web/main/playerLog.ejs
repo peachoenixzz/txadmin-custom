@@ -1,4 +1,184 @@
 <%- await include('parts/header.ejs', locals) %>
+<style>
+  /* #data-table th,
+  #data-table td {
+    border-top: 1px solid #00bf8f;
+    border-bottom: 1px solid #00bf8f;
+  } */
+ 
 
+  /* Update the CSS for the table cells */
+  #data-table td {
+    width: calc(100% / 6); /* Divide the width equally among the 6 columns */
+    text-align: left; /* Adjust the text alignment if needed */
+  }
+  .search-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 15px;
+  }
+
+  .search-container .form-control {
+    width: 200px; 
+    margin-left: auto; 
+  }
+</style>
+<div class="text-center" style="margin-bottom: 15px">
+  <h3>Player Log</h3>
+</div>
+<div>
+  <div class="search-container">
+    <input id="search-input" type="text" class="form-control" placeholder="Search">
+  </div>
+  <div style="overflow-x: scroll;">
+  <table id="data-table" class="table table-hover">
+    <thead>
+      <tr>
+        <th>Steam</th>
+        <th>Discord</th>
+        <th>License</th>
+        <th>Event</th>
+        <th>Content</th>
+        <th>Player Name</th>
+      </tr>
+    </thead>
+    <tbody id="data-body"></tbody>
+  </table>
+</div>
+  <nav aria-label="...">
+    <ul id="pagination" class="pagination justify-content-end">
+      <li id="previous-page" class="page-item disabled">
+        <span class="page-link">Previous</span>
+      </li>
+      <li  class="page-item active">
+        <span id="current-page" class="page-link">1</span>
+      </li>
+      <li id="next-page" class="page-item">
+        <span class="page-link">Next</span>
+      </li>
+    </ul>
+  </nav>
+</div>
+
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script>
+  const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+  const apiUrl = 'https://circleproject.dev/api/fivemlog';
+
+  let page = 1;
+  const pageLimit = 10;
+  let data = [];
+  let filteredData = [];
+
+  function showData() {
+    const startIndex = (page - 1) * pageLimit;
+    const endIndex = page * pageLimit;
+    const paginatedData = filteredData.length ? filteredData.slice(startIndex, endIndex) : data.slice(startIndex, endIndex);
+
+    const dataBody = document.getElementById('data-body');
+    dataBody.innerHTML = '';
+
+    paginatedData.forEach(function (item) {
+      const row = document.createElement('tr');
+
+      const steamCell = document.createElement('td');
+      steamCell.textContent = item.player.identifiers.steam;
+      row.appendChild(steamCell);
+
+      const discordCell = document.createElement('td');
+      discordCell.textContent = item.player.identifiers.discord;
+      row.appendChild(discordCell);
+
+      const licenseCell = document.createElement('td');
+      licenseCell.textContent = item.player.identifiers.license;
+      row.appendChild(licenseCell);
+
+      const eventCell = document.createElement('td');
+      eventCell.textContent = item.event;
+      row.appendChild(eventCell);
+
+      const contentCell = document.createElement('td');
+      contentCell.textContent = item.content;
+      row.appendChild(contentCell);
+
+      const playerNameCell = document.createElement('td');
+      playerNameCell.textContent = item.player.name;
+      row.appendChild(playerNameCell);
+
+      dataBody.appendChild(row);
+    });
+
+    const previousPage = document.getElementById('previous-page');
+    const currentPage = document.getElementById('current-page');
+    const nextPage = document.getElementById('next-page');
+
+    if (page === 1) {
+      previousPage.classList.add('disabled');
+    } else {
+      previousPage.classList.remove('disabled');
+    }
+
+    if (endIndex >= (filteredData.length || data.length)) {
+      nextPage.classList.add('disabled');
+    } else {
+      nextPage.classList.remove('disabled');
+    }
+
+    currentPage.textContent = page;
+  }
+
+  function goToPreviousPage() {
+    if (page > 1) {
+      page--;
+      showData();
+    }
+  }
+
+  function goToNextPage() {
+    const endIndex = page * pageLimit;
+
+    if (endIndex < (filteredData.length || data.length)) {
+      page++;
+      showData();
+    }
+  }
+
+  function search() {
+  const searchInput = document.getElementById('search-input');
+  const searchKeyword = searchInput.value.trim().toLowerCase();
+  filteredData = data.filter(item => {
+    return (
+      item.player.identifiers.steam.toString().toLowerCase().includes(searchKeyword) ||
+      item.player.identifiers.discord.toString().toLowerCase().includes(searchKeyword) ||
+      item.player.identifiers.license.toString().toLowerCase().includes(searchKeyword) ||
+      item.event.toLowerCase().includes(searchKeyword) ||
+      item.content.toLowerCase().includes(searchKeyword) ||
+      item.player.name.toLowerCase().includes(searchKeyword)
+    );
+  });
+
+  page = 1;
+  showData();
+}
+
+
+  document.getElementById('previous-page').addEventListener('click', goToPreviousPage);
+  document.getElementById('next-page').addEventListener('click', goToNextPage);
+  document.getElementById('search-input').addEventListener('input', search);
+
+  axios.get(proxyUrl + apiUrl, {
+    headers: {
+      'Authorization': 'Basic dGhlY2lyY2xlZGV2OlRoZWNpcmNsZTExMiFAIw==',
+      'X-Requested-With': 'XMLHttpRequest'
+    }
+  })
+    .then(function (response) {
+      data = response.data;
+      showData();
+    })
+    .catch(function (error) {
+      console.error('Error fetching data:', error);
+    });
+</script>
 
 <%- await include('parts/footer.ejs', locals) %>

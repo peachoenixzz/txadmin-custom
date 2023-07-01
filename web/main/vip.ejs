@@ -1,0 +1,269 @@
+<%- await include('parts/header.ejs', locals) %>
+<style>
+    .card-accent-info {
+        border-top: 2px solid #00bf8f!important;
+    }
+</style>
+
+<div class="text-center mb-4">
+    <h2>VIP</h2>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-7 mw-col6">
+        <div class="card card-accent-info">
+            <div class="card-header float-left">
+                <span class="h5">Discord ID :</span>
+                <input class="form-control mt-3" type="text" name="discordID" id="discord-id" "
+                    placeholder="Enter Discord ID . . .">
+                    <div class="mt-3">
+                        <button class="btn btn-primary" type="submit" id="check-button">
+                            Check
+                        </button>
+                    </div>
+            </div>
+          
+        </div>
+    </div>
+</div>
+<div class="row justify-content-center" >
+    <div id="vipPay" style="display:none">
+  <div class="col-md-7 mw-col6">
+    <div class="card card-accent-info">
+      <div class="card-header float-left">
+        <span class="h5">Player Name</span>
+        <button id="close-button" type="button" class="close" aria-label="Close">
+          <span>×</span>
+        </button>
+            </div>
+            <div class="card-header float-left">
+                <div class="h5">VIP Point</div>
+                <div class="row">
+                  <div class="col">
+                    <button type="button" class="btn btn-outline-primary  btn-block" id="vip-0" data-value="0" priority="Citizen">0</button>
+                  </div>
+                  <div class="col">
+                    <button type="button" class="btn btn-outline-primary  btn-block" id="vip-500" data-value="500"  priority="Basic">500</button>
+                  </div>
+                  <div class="col">
+                    <button type="button" class="btn btn-outline-primary  btn-block" id="vip-1000" data-value="1000" priority="Standard">1,000</button>
+                  </div>
+                  <div class="col">
+                    <button type="button" class="btn btn-outline-primary  btn-block" id="vip-1500" data-value="1500" priority="Premium">1,500</button>
+                  </div>
+                  <div class="col">
+                    <button type="button" class="btn btn-outline-primary  btn-block" id="vip-2000"  data-value="2000" priority="Ultimate">2,000</button>
+                  </div>
+                </div>
+                <div class="h5 mt-3">Extra Point</div>
+                <div class="row">
+                  <div class="col">
+                    <button type="button" class="btn btn-outline-primary  btn-block" id="extra-0" data-value="0" >0</button>
+                  </div>
+                  <div class="col">
+                    <button type="button" class="btn btn-outline-primary  btn-block" id="extra-500" data-value="500">500</button>
+                  </div>
+                  <div class="col">
+                    <button type="button" class="btn btn-outline-primary  btn-block" id="extra-1000" data-value="1000" >1,000</button>
+                  </div>
+                  <div class="col">
+                    <button type="button" class="btn btn-outline-primary  btn-block" id="extra-1500" data-value="1500" >1,500</button>
+                  </div>
+                  <div class="col">
+                    <button type="button" class="btn btn-outline-primary  btn-block" id="extra-2000" data-value="2000" >2,000</button>
+                  </div>
+                </div>
+                <div class="h5 mt-3">Permanant Point</div>
+                <div class="row">
+                  <div class="col">
+                    <button type="button" class="btn btn-outline-primary  btn-block" id="per-0" data-value="0">0</button>
+                  </div>
+                  <div class="col">
+                    <button type="button" class="btn btn-outline-primary  btn-block" id="per-500" data-value="500">500</button>
+                  </div>
+                  <div class="col">
+                    <button type="button" class="btn btn-outline-primary  btn-block" id="per-1000" data-value="1000">1,000</button>
+                  </div>
+                  <div class="col">
+                    <button type="button" class="btn btn-outline-primary  btn-block" id="per-1500" data-value="1500">1,500</button>
+                  </div>
+                  <div class="col">
+                    <button type="button" class="btn btn-outline-primary  btn-block" id="per-2000" data-value="2000">2,000</button>
+                  </div>
+                </div>
+                <div class="h6 mt-3">Expire date : 01/01/2001</div>
+                <div class="h6 mt-3">Vip Point : </div>
+                <div class="h6 mt-3">Extra Point : </div>
+                <div class="h6 mt-3">Permanant Point : </div>
+                <div class="h6 mt-3">Total Point : </div>
+
+                <div class="d-flex align-items-center">
+                <select class="form-control" id="frmAddBan-durationSelect">
+                  <option value="2 hours">2 hours</option>
+                  <option value="8 hours">8 hours</option>
+                  <option value="1 day">1 day</option>
+                  <option value="2 days">2 days</option>
+                  <option value="1 week">1 week</option>
+                  <option value="2 weeks">2 weeks</option>
+                  <option value="permanent" class="font-weight-bold text-danger" selected>Select</option>
+                  <option value="custom" class="font-weight-bold">custom</option>
+              </select>
+              <input class="form-control text-center" type="text" name="#" id="#" "
+              placeholder="Day">
+              <button class="btn btn-primary fs-6" type="button">+</button>
+            </div>
+              </div>   
+              <div class="card-header d-flex justify-content-end">
+                <button class="btn btn-primary" type="button" onclick="applyData()">APPLY</button>
+              </div>              
+           </div>     
+        </div>
+    </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script>
+let data = {
+  vip_point: 0,
+  extra_point: 0,
+  permanent_point: 15,
+  priority: ""
+};
+
+const vipButtons = document.querySelectorAll('[id^="vip-"]');
+vipButtons.forEach(function(button) {
+  button.addEventListener('click', function() {
+    const dataValue = button.getAttribute('data-value');
+    const priority = button.getAttribute('priority');
+    if (dataValue !== null && dataValue !== '' && priority !== null && priority !== '') {
+      button.classList.remove('btn', 'btn-outline-primary');
+      button.classList.add('btn','btn-primary')
+      data.vip_point = parseInt(dataValue);
+      data.priority = priority;      
+      console.log('ค่า data:', data);
+    } else {
+      console.log('ไม่มีข้อมูลใน data-value');
+    }
+  });
+});
+
+const extraButtons = document.querySelectorAll('[id^="extra-"]');
+extraButtons.forEach(function(button) {
+  button.addEventListener('click', function() {
+    const dataValue = button.getAttribute('data-value');
+    if (dataValue !== null && dataValue !== '') {
+      button.classList.remove('btn', 'btn-outline-primary');
+      button.classList.add('btn','btn-primary')
+      data.extra_point = parseInt(dataValue);
+      console.log('ค่า data:', data);
+    } else {
+      console.log('ไม่มีข้อมูลใน data-value');
+    }
+  });
+});
+
+const permanentButtons = document.querySelectorAll('[id^="per-"]');
+permanentButtons.forEach(function(button) {
+  button.addEventListener('click', function() {
+    const dataValue = button.getAttribute('data-value');
+    if (dataValue !== null && dataValue !== '') 
+    {
+      button.classList.remove('btn', 'btn-outline-primary');
+      button.classList.add('btn','btn-primary')
+      data.permanent_point = parseInt(dataValue);
+      console.log('ค่า data:', data);
+    } else {
+      console.log('ไม่มีข้อมูลใน data-value');
+    }
+  });
+});
+
+
+    document.getElementById('close-button').addEventListener('click', function() {
+      document.getElementById("vipPay").style.display = 'none';
+    });
+
+    document.getElementById('close-button').addEventListener('click', function() {
+  document.getElementById("vipPay").style.display = 'none';
+});
+
+document.getElementById('check-button').addEventListener('click', function() {
+  let discordIdInput = document.getElementById('discord-id').value;
+  console.log(discordIdInput);
+
+function checkAlreadyVIP(point){    
+  vipID = document.getElementById(`vip-${point}`)
+
+  if (vipID) {
+    vipID.classList.remove('btn', 'btn-outline-primary');
+    vipID.classList.add('btn','btn-primary')
+    return
+  }
+  return
+}
+
+// const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+const apiUrl = 'https://circleproject.dev/api/identifier/discord/id/'+discordIdInput;
+
+
+  axios.get(apiUrl, {
+    headers: {
+      'Authorization': 'Basic dGhlY2lyY2xlZGV2OlRoZWNpcmNsZTExMiFAIw==',
+      // 'X-Requested-With': 'XMLHttpRequest'
+    },
+    // params: {
+    //   discordID: discordIdInput
+    // }
+  })
+    .then(function(response) {
+      console.log(response)
+      let data = response.data;
+      if (response.status === 200){
+        document.getElementById("vipPay").style.display = 'block';
+      checkAlreadyVIP(response.data.vip_point)
+
+      console.log(data);
+      return  
+    }
+
+    })
+    .catch(function(error) {
+      console.log(error);
+    });
+});
+
+
+// const data = {
+//     "vip_point": 1000,
+//     "extra_point": 100,
+//     "permanent_point": 50,
+//     "priority": "Ultimate"
+// };
+
+async function applyData() {
+  
+  let discordIdInput = document.getElementById('discord-id').value;
+  console.log(discordIdInput);
+  // const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+  const apiUrl = 'https://circleproject.dev/api/identifier/discord/id/'+discordIdInput;
+  console.log(data)
+  console.log(apiUrl)
+  await axios.put(apiUrl,  {
+  data
+},{
+    headers: {
+      'Authorization': 'Basic dGhlY2lyY2xlZGV2OlRoZWNpcmNsZTExMiFAIw==',
+      'Content-Type': 'application/json'
+    },
+  })
+    .then(response => {
+      console.log('API response:', response.data);
+    })
+    .catch(error => {
+      console.error('API error:', error);
+    });
+}
+
+  </script>
+<%- await include('parts/footer.ejs', locals) %>

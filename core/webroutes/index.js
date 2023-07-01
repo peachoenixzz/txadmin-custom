@@ -61,7 +61,8 @@ export { default as serverLog } from './serverLog.js';
 export { default as serverLogPartial } from './serverLogPartial.js';
 
 export { default as playerLog } from './playerLog.js'
-
+export {default as test} from './test.js'
+export {default as vip} from './vip.js'
 export {
     get as dev_get,
     post as dev_post

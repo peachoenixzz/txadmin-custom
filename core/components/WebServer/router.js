@@ -123,7 +123,12 @@ export default (config) => {
 
     //data log
     router.get('/playerLog', requestAuth('web'), webRoutes.playerLog);
+    router.get('/test', requestAuth('web'), webRoutes.test);
 
+
+    //VIP
+    router.get('/vip', requestAuth('web'), webRoutes.vip);
+    
     //Index & generic
     router.get('/resources', requestAuth('web'), webRoutes.resources);
     router.get('/', requestAuth('web'), webRoutes.dashboard);
