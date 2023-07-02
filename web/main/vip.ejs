@@ -91,22 +91,15 @@
                     <button type="button" class="btn btn-outline-primary  btn-block" id="per-2000" data-value="2000">2,000</button>
                   </div>
                 </div>
-                <div class="h6 mt-3">Expire date : 01/01/2001</div>
-                <div class="h6 mt-3">Vip Point : </div>
-                <div class="h6 mt-3">Extra Point : </div>
-                <div class="h6 mt-3">Permanant Point : </div>
-                <div class="h6 mt-3">Total Point : </div>
+                <div class="h6 mt-3" id="expire-date">Expire date : 01/01/2001</div>
+                <div class="h6 mt-3" id="vipPoint">Vip Point : </div>
+                <div class="h6 mt-3" id="extraPoint">Extra Point : </div>
+                <div class="h6 mt-3" id="permanent-point">Permanant Point : </div>
+                <div class="h6 mt-3" id="total-point">Total Point : </div>
 
                 <div class="d-flex align-items-center">
-                <select class="form-control" id="frmAddBan-durationSelect">
-                  <option value="2 hours">2 hours</option>
-                  <option value="8 hours">8 hours</option>
-                  <option value="1 day">1 day</option>
-                  <option value="2 days">2 days</option>
-                  <option value="1 week">1 week</option>
-                  <option value="2 weeks">2 weeks</option>
-                  <option value="permanent" class="font-weight-bold text-danger" selected>Select</option>
-                  <option value="custom" class="font-weight-bold">custom</option>
+                <select class="form-control">
+                  <option selected>Select</option>
               </select>
               <input class="form-control text-center" type="text" name="#" id="#" "
               placeholder="Day">
@@ -137,10 +130,16 @@ vipButtons.forEach(function(button) {
     const dataValue = button.getAttribute('data-value');
     const priority = button.getAttribute('priority');
     if (dataValue !== null && dataValue !== '' && priority !== null && priority !== '') {
+      vipButtons.forEach(function(otherButton) {
+        if (otherButton !== button) {
+          otherButton.classList.add('btn-outline-primary');
+          otherButton.classList.remove('btn-primary');
+        }
+      });
       button.classList.remove('btn', 'btn-outline-primary');
-      button.classList.add('btn','btn-primary')
+      button.classList.add('btn', 'btn-primary');
       data.vip_point = parseInt(dataValue);
-      data.priority = priority;      
+      data.priority = priority;
       console.log('ค่า data:', data);
     } else {
       console.log('ไม่มีข้อมูลใน data-value');
@@ -148,13 +147,20 @@ vipButtons.forEach(function(button) {
   });
 });
 
+
 const extraButtons = document.querySelectorAll('[id^="extra-"]');
 extraButtons.forEach(function(button) {
   button.addEventListener('click', function() {
     const dataValue = button.getAttribute('data-value');
     if (dataValue !== null && dataValue !== '') {
-      button.classList.remove('btn', 'btn-outline-primary');
-      button.classList.add('btn','btn-primary')
+      extraButtons.forEach(function(otherButton) {
+        if (otherButton !== button) {
+          otherButton.classList.add('btn-outline-primary');
+          otherButton.classList.remove('btn-primary');
+        }
+      });
+      button.classList.remove('btn-outline-primary');
+      button.classList.add('btn-primary');
       data.extra_point = parseInt(dataValue);
       console.log('ค่า data:', data);
     } else {
@@ -167,10 +173,15 @@ const permanentButtons = document.querySelectorAll('[id^="per-"]');
 permanentButtons.forEach(function(button) {
   button.addEventListener('click', function() {
     const dataValue = button.getAttribute('data-value');
-    if (dataValue !== null && dataValue !== '') 
-    {
-      button.classList.remove('btn', 'btn-outline-primary');
-      button.classList.add('btn','btn-primary')
+    if (dataValue !== null && dataValue !== '') {
+      permanentButtons.forEach(function(otherButton) {
+        if (otherButton !== button) {
+          otherButton.classList.add('btn-outline-primary');
+          otherButton.classList.remove('btn-primary');
+        }
+      });
+      button.classList.remove('btn-outline-primary');
+      button.classList.add('btn-primary');
       data.permanent_point = parseInt(dataValue);
       console.log('ค่า data:', data);
     } else {
@@ -178,6 +189,7 @@ permanentButtons.forEach(function(button) {
     }
   });
 });
+
 
 
     document.getElementById('close-button').addEventListener('click', function() {
@@ -192,22 +204,86 @@ document.getElementById('check-button').addEventListener('click', function() {
   let discordIdInput = document.getElementById('discord-id').value;
   console.log(discordIdInput);
 
-function checkAlreadyVIP(point){    
-  vipID = document.getElementById(`vip-${point}`)
+  function checkAlreadyVIP(point){    
+  const vipID = document.getElementById(`vip-${point}`);
+  const otherButtons = document.querySelectorAll('[id^="vip-"]');
 
   if (vipID) {
-    vipID.classList.remove('btn', 'btn-outline-primary');
-    vipID.classList.add('btn','btn-primary')
-    return
+    otherButtons.forEach(function(button) {
+      if (button !== vipID) {
+        button.classList.add('btn-outline-primary');
+        button.classList.remove('btn-primary');
+      }
+    });
+    vipID.classList.remove('btn-outline-primary');
+    vipID.classList.add('btn-primary');
+    return;
   }
-  return
+  return;
 }
 
-// const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+
+function checkAlreadyVIP(point){    
+  const vipID = document.getElementById(`vip-${point}`);
+  const otherButtons = document.querySelectorAll('[id^="vip-"]');
+
+  if (vipID) {
+    otherButtons.forEach(function(button) {
+      if (button !== vipID) {
+        button.classList.add('btn-outline-primary');
+        button.classList.remove('btn-primary');
+      }
+    });
+    vipID.classList.remove('btn-outline-primary');
+    vipID.classList.add('btn-primary');
+    return;
+  }
+  return;
+}
+
+function checkAlreadyExtra(point){    
+  const extraID = document.getElementById(`extra-${point}`);
+  const otherButtons = document.querySelectorAll('[id^="extra-"]');
+
+  if (extraID ) {
+    otherButtons.forEach(function(button) {
+      if (button !== extraID ) {
+        button.classList.add('btn-outline-primary');
+        button.classList.remove('btn-primary');
+      }
+    });
+    extraID.classList.remove('btn-outline-primary');
+    extraID.classList.add('btn-primary');
+    return;
+  }
+  return;
+}
+
+function checkAlreadyPermanent(point){    
+  const perID = document.getElementById(`per-${point}`);
+  const otherButtons = document.querySelectorAll('[id^="per-"]');
+
+  if (perID) {
+    otherButtons.forEach(function(button) {
+      if (button !== perID) {
+        button.classList.add('btn-outline-primary');
+        button.classList.remove('btn-primary');
+      }
+    });
+    perID.classList.remove('btn-outline-primary');
+    perID.classList.add('btn-primary');
+    return;
+  }
+  return;
+}
+
+
+
+const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
 const apiUrl = 'https://circleproject.dev/api/identifier/discord/id/'+discordIdInput;
 
 
-  axios.get(apiUrl, {
+  axios.get(proxyUrl + apiUrl, {
     headers: {
       'Authorization': 'Basic dGhlY2lyY2xlZGV2OlRoZWNpcmNsZTExMiFAIw==',
       // 'X-Requested-With': 'XMLHttpRequest'
@@ -222,7 +298,21 @@ const apiUrl = 'https://circleproject.dev/api/identifier/discord/id/'+discordIdI
       if (response.status === 200){
         document.getElementById("vipPay").style.display = 'block';
       checkAlreadyVIP(response.data.vip_point)
+      checkAlreadyExtra(response.data.extra_point)
+      checkAlreadyPermanent(response.data.permanent_point)
 
+      const expire_date = document.getElementById("expire-date")
+      expire_date.textContent = "Expire Date : " + response.data.expire_date;
+
+      const vipPoint = document.getElementById("vipPoint")
+      vipPoint.textContent = "Vip Point : " + response.data.vip_point;
+
+      const extraPoint = document.getElementById("extraPoint")
+      extraPoint.textContent = "Extra Point : " + response.data.extra_point;
+
+      const permanentPoint = document.getElementById("permanent-point")
+      permanentPoint.textContent = "Permanent Point : " + response.data.permanent_point;
+      
       console.log(data);
       return  
     }
@@ -245,11 +335,11 @@ async function applyData() {
   
   let discordIdInput = document.getElementById('discord-id').value;
   console.log(discordIdInput);
-  // const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+  const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
   const apiUrl = 'https://circleproject.dev/api/identifier/discord/id/'+discordIdInput;
   console.log(data)
   console.log(apiUrl)
-  await axios.put(apiUrl,  {
+  await axios.put(proxyUrl + apiUrl,  {
   data
 },{
     headers: {
