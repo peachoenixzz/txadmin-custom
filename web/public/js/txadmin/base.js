@@ -137,7 +137,6 @@ const updateMarkdownNotification = (data, notify) => {
 //  contentType: 'application/json'
 const txAdminAPI = ({type, url, data, dataType, timeout, success, error}) => {
     if (anyUndefined(type, url)) return false;
-
     url = TX_BASE_PATH + url;
     timeout = timeout || REQ_TIMEOUT_MEDIUM;
     dataType = dataType || 'json';
