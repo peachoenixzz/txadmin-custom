@@ -98,10 +98,10 @@
                 <div class="h6 mt-3" id="total-point">Total Point : </div>
 
                 <div class="d-flex align-items-center">
-                <select class="form-control">
+                <select class="form-control" id="dataSelect">
                   <option selected>Select</option>
               </select>
-              <input class="form-control text-center" type="text" name="#" id="#" "
+              <input class="form-control text-center" type="text" name="#" id="dayInput" 
               placeholder="Day">
               <button class="btn btn-primary fs-6" type="button">+</button>
             </div>
@@ -120,9 +120,13 @@
 let data = {
   vip_point: 0,
   extra_point: 0,
-  permanent_point: 15,
-  priority: ''
+  permanent_point: 0,
+  priority: '',
+  item_name: "",
+  day: 0
 };
+
+
 
 const vipButtons = document.querySelectorAll('[id^="vip-"]');
 vipButtons.forEach(function(button) {
@@ -190,21 +194,7 @@ permanentButtons.forEach(function(button) {
   });
 });
 
-
-
-    document.getElementById('close-button').addEventListener('click', function() {
-      document.getElementById("vipPay").style.display = 'none';
-    });
-
-    document.getElementById('close-button').addEventListener('click', function() {
-  document.getElementById("vipPay").style.display = 'none';
-});
-
-document.getElementById('check-button').addEventListener('click', function() {
-  let discordIdInput = document.getElementById('discord-id').value;
-  console.log(discordIdInput);
-
-  function checkAlreadyVIP(point){    
+function checkAlreadyVIP(point){    
   const vipID = document.getElementById(`vip-${point}`);
   const otherButtons = document.querySelectorAll('[id^="vip-"]');
 
@@ -219,10 +209,7 @@ document.getElementById('check-button').addEventListener('click', function() {
     vipID.classList.add('btn-primary');
     return;
   }
-<<<<<<< HEAD
   return;
-=======
->>>>>>> 3b526eacbbb5ac9db930fb0ec07f49988673ef44
 }
 
 
@@ -282,9 +269,21 @@ function checkAlreadyPermanent(point){
 
 
 
+
+    document.getElementById('close-button').addEventListener('click', function() {
+      document.getElementById("vipPay").style.display = 'none';
+    });
+
+    document.getElementById('close-button').addEventListener('click', function() {
+  document.getElementById("vipPay").style.display = 'none';
+});
+
+document.getElementById('check-button').addEventListener('click', function() {
+  let discordIdInput = document.getElementById('discord-id').value;
+  console.log(discordIdInput);
+
 const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
 const apiUrl = 'https://circleproject.dev/api/identifier/discord/id/'+discordIdInput;
-
 
   axios.get(proxyUrl + apiUrl, {
     headers: {
@@ -299,13 +298,13 @@ const apiUrl = 'https://circleproject.dev/api/identifier/discord/id/'+discordIdI
     //   discordID: discordIdInput
     // }
   })
-    .then(function(response) {
+    .then(async function(response) {
       console.log(response)
       let data = response.data;
       if (response.status === 200){
         document.getElementById("vipPay").style.display = 'block';
+      await selectItem()
       checkAlreadyVIP(response.data.vip_point)
-<<<<<<< HEAD
       checkAlreadyExtra(response.data.extra_point)
       checkAlreadyPermanent(response.data.permanent_point)
 
@@ -321,8 +320,6 @@ const apiUrl = 'https://circleproject.dev/api/identifier/discord/id/'+discordIdI
       const permanentPoint = document.getElementById("permanent-point")
       permanentPoint.textContent = "Permanent Point : " + response.data.permanent_point;
       
-=======
->>>>>>> 3b526eacbbb5ac9db930fb0ec07f49988673ef44
       console.log(data);
       return
     }
@@ -333,7 +330,48 @@ const apiUrl = 'https://circleproject.dev/api/identifier/discord/id/'+discordIdI
     });
 });
 
+function selectItem() {
+      const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+      const apiItem = 'https://circleproject.dev/api/items/vip';
 
+      axios.get(proxyUrl + apiItem, {
+          headers: {
+            'Authorization': 'Basic dGhlY2lyY2xlZGV2OlRoZWNpcmNsZTExMiFAIw==',
+            'Content-Type': 'application/json'
+          },
+        })
+        .then(function(response) {
+          const data = response.data;
+          const select = document.getElementById("dataSelect");
+
+          // สร้างตัวเลือก (option) จากข้อมูลที่ได้รับจาก API
+          data.forEach(function(item) {
+            const option = document.createElement("option");
+            option.value = item.item_name;
+            option.textContent = item.item_label;
+            select.appendChild(option);
+          });
+        })
+        .catch(function(error) {
+          console.log(error);
+        });
+    }
+
+    document.getElementById("dataSelect").addEventListener("change", handleSelectChange);
+    function handleSelectChange() {
+      const select = document.getElementById("dataSelect");
+      const selectedItem = select.value;
+      data.item_name = selectedItem;
+      console.log(data); 
+    }
+
+    document.getElementById("dayInput").addEventListener("change", handleDayInputChange);
+    function handleDayInputChange() {
+      const dayInput = document.getElementById("dayInput");
+      const dayValue = dayInput.value;
+      data.day = parseInt(dayValue);
+      console.log(data);
+    }
 // const data = {
 //     "vip_point": 1000,
 //     "extra_point": 100,
