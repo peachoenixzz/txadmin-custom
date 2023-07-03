@@ -206,24 +206,6 @@
       });
     });
 
-    function checkAlreadyVIP(point) {
-      const vipID = document.getElementById(`vip-${point}`);
-      const otherButtons = document.querySelectorAll('[id^="vip-"]');
-
-      if (vipID) {
-        otherButtons.forEach(function (button) {
-          if (button !== vipID) {
-            button.classList.add('btn-outline-primary');
-            button.classList.remove('btn-primary');
-          }
-        });
-        vipID.classList.remove('btn-outline-primary');
-        vipID.classList.add('btn-primary');
-        return;
-      }
-      return;
-    }
-
 
     function checkAlreadyVIP(point) {
       const vipID = document.getElementById(`vip-${point}`);
@@ -291,13 +273,6 @@
     });
 
 
-function checkAlreadyVIP(point){
-    vipID = document.getElementById(`vip-${point}`)
-    if (vipID) {
-        vipID.classList.remove('btn', 'btn-outline-primary');
-        vipID.classList.add('btn','btn-primary')
-    }
-}
 async function checkUser(){
   let discordIdInput = document.getElementById('discord-id').value;
 // const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
@@ -371,38 +346,39 @@ async function applyData() {
           .catch(error => {
             console.error('API error:', error);
           });
+}
 
-  function selectItem() {
-    const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
-    const apiItem = 'https://circleproject.dev/api/items/vip';
+    function selectItem() {
+      const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+      const apiItem = 'https://circleproject.dev/api/items/vip';
 
-    axios.get(proxyUrl + apiItem, {
-      headers: {
-        'Authorization': 'Basic dGhlY2lyY2xlZGV2OlRoZWNpcmNsZTExMiFAIw==',
-        'X-Requested-With': 'XMLHttpRequest',
-        'Content-Type': 'application/json'
-      },
-    })
-            .then(function (response) {
-              const data = response.data;
-              const select = document.getElementById("dataSelect");
+      axios.get(proxyUrl + apiItem, {
+        headers: {
+          'Authorization': 'Basic dGhlY2lyY2xlZGV2OlRoZWNpcmNsZTExMiFAIw==',
+          'X-Requested-With': 'XMLHttpRequest',
+          'Content-Type': 'application/json'
+        },
+      })
+              .then(function (response) {
+                const data = response.data;
+                const select = document.getElementById("dataSelect");
 
-              // สร้างตัวเลือก (option) จากข้อมูลที่ได้รับจาก API
-              data.forEach(function (item) {
-                const option = document.createElement("option");
-                option.value = item.item_name;
-                option.textContent = item.item_label;
-                select.appendChild(option);
+                // สร้างตัวเลือก (option) จากข้อมูลที่ได้รับจาก API
+                data.forEach(function (item) {
+                  const option = document.createElement("option");
+                  option.value = item.item_name;
+                  option.textContent = item.item_label;
+                  select.appendChild(option);
+                });
+              })
+              .catch(function (error) {
+                console.log(error);
               });
-            })
-            .catch(function (error) {
-              console.log(error);
-            });
-  }
+    }
 
-  function plusItems() {
-    const plusContainer = document.getElementById("plus-container");
-    const newselectItem = `
+    function plusItems() {
+      const plusContainer = document.getElementById("plus-container");
+      const newselectItem = `
         <div class="d-flex align-items-center">
             <select class="form-control" id="dataSelect">
                 <option selected>Select</option>
@@ -411,8 +387,9 @@ async function applyData() {
             <button class="btn btn-primary fs-6" type="button" onclick="plusItems()">+</button>
         </div>
     `;
-    plusContainer.insertAdjacentHTML('beforeend', newselectItem);
-  }
+      plusContainer.insertAdjacentHTML('beforeend', newselectItem);
+    }
+
 
 
   document.getElementById("dataSelect").addEventListener("change", handleSelectChange);
@@ -432,39 +409,6 @@ async function applyData() {
     data.day = parseInt(dayValue);
     console.log(data);
   }
-
-  // const data = {
-  //     "vip_point": 1000,
-  //     "extra_point": 100,
-  //     "permanent_point": 50,
-  //     "priority": "Ultimate"
-  // };
-}
-
-    async function applyData() {
-
-      let discordIdInput = document.getElementById('discord-id').value;
-      console.log(discordIdInput);
-      const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
-      const apiUrl = 'https://circleproject.dev/api/identifier/discord/id/' + discordIdInput;
-      console.log(data)
-      console.log(apiUrl)
-      await axios.put(proxyUrl + apiUrl, {
-        data
-      }, {
-        headers: {
-          'Authorization': 'Basic dGhlY2lyY2xlZGV2OlRoZWNpcmNsZTExMiFAIw==',
-          'X-Requested-With': 'XMLHttpRequest',
-          'Content-Type': 'application/json'
-        },
-      })
-              .then(response => {
-                console.log('API response:', response.data);
-              })
-              .catch(error => {
-                console.error('API error:', error);
-              });
-      }
 
   </script>
   <%- await include('parts/footer.ejs', locals) %>
