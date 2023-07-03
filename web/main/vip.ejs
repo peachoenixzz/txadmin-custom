@@ -204,16 +204,16 @@ function checkAlreadyVIP(point){
 
 // const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
 const apiUrl = 'https://circleproject.dev/api/identifier/discord/id/'+discordIdInput;
-
-
   axios.get(apiUrl, {
     headers: {
       'Authorization': 'Basic dGhlY2lyY2xlZGV2OlRoZWNpcmNsZTExMiFAIw==',
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded',
         'Access-Control-Allow-Origin': 'https://tx.circleproject.dev',
         'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE',
         'Access-Control-Allow-Headers': 'Authorization',
-        'Access-Control-Max-Age': 1800
+        'Access-Control-Max-Age': 1800,
+        'Cache-Control': 'public, max-age=0',
+        'Connection': 'keep-alive'
     },
     // params: {
     //   discordID: discordIdInput
