@@ -119,6 +119,7 @@
               <input class="form-control text-center" type="number" placeholder="Exp Date"   id="exp-date">
               <button class="btn btn-primary fs-6" type="button" onclick="plusItems()">+</button>
           </div>
+          <div id="table-container"></div>
           </div>
           </div>
           <div class="card-header d-flex justify-content-end">
@@ -379,53 +380,149 @@ async function applyData() {
               });
     }
 
+    function plusItems() {
+  const selectItem = document.getElementById("dataSelect");
+  const quantity = document.getElementById("quantity");
+  const expDate = document.getElementById("exp-date");
 
-function plusItems() {
-const selectItem = document.getElementById("dataSelect");
-const quantity = document.getElementById("quantity");
-const expDate = document.getElementById("exp-date");
-
-
-const item = {
+  const item = {
     item_name: selectItem.value,
     quantity: quantity.value,
     expire_date: expDate.value
   };
- 
+
   data.expire_item.push(item);
-
-
-  data.expire_item.forEach((item, index) => {
-  if (item.item_name !== "" || item.quantity !== 0 || item.expire_date !== 0) {
-    const itemName = item.item_name;
-    const quantity = item.quantity;
-    const expireDate = item.expire_date;
-
-
-    console.log(`Item at position ${index + 1}:`);
-    console.log("Item Name:", itemName);
-    console.log("Quantity:", quantity);
-    console.log("Expire Date:", expireDate);
-  }
-});
 
   selectItem.selectedIndex = 0;
   quantity.value = "";
   expDate.value = "";
-  // const plusContainer = document.getElementById("plus-container");
-  // const newselectItem = `
-  //   <div class="d-flex align-items-center">
-  //     <select class="form-control" id="dataSelect-${count}">
-  //       <option selected>Select</option>
-  //     </select>
-  //     <input class="form-control text-center" type="number" placeholder="quantity">
-  //     <input class="form-control text-center" type="number" placeholder="Day">
-  //     <button class="btn btn-primary fs-6" type="button">+</button>
-  //   </div>
-  // `;
-  // selectItem(count);
-  // plusContainer.insertAdjacentHTML('beforeend', newselectItem);
+  
+  const tableContainer = document.getElementById("table-container");
+  tableContainer.innerHTML = "";
+
+  function renderTable() {
+    const table = document.createElement("table");
+    const tableHeader = document.createElement("tr");
+    const th1 = document.createElement("th");
+    const th2 = document.createElement("th");
+    const th3 = document.createElement("th");
+    th1.textContent = "Item Name";
+    th2.textContent = "Quantity";
+    th3.textContent = "Expire Date";
+    tableHeader.appendChild(th1);
+    tableHeader.appendChild(th2);
+    tableHeader.appendChild(th3);
+    table.appendChild(tableHeader);
+
+    tableContainer.innerHTML = "";
+
+    if (data.expire_item.length === 0) {
+      tableContainer.style.display = "none";
+      return;
+    } else {
+      tableContainer.style.display = "block";
+    }
+
+    tableContainer.appendChild(table);
+
+    for (let index = 0; index < data.expire_item.length; index++) {
+      const item = data.expire_item[index];
+
+      if (item.item_name !== "" || item.quantity !== "0" || item.expire_date !== "0") {
+        const row = document.createElement("tr");
+        row.id = `row-${index}`;
+
+        const td1 = document.createElement("td");
+        const td2 = document.createElement("td");
+        const td3 = document.createElement("td");
+        td1.textContent = item.item_name;
+        td2.textContent = item.quantity;
+        td3.textContent = item.expire_date;
+        row.appendChild(td1);
+        row.appendChild(td2);
+        row.appendChild(td3);
+
+        const deleteButton = document.createElement("button");
+        deleteButton.textContent = "Delete";
+        deleteButton.addEventListener("click", function() {
+          const rowToDelete = document.getElementById(`row-${index}`);
+          rowToDelete.remove();
+          data.expire_item.splice(index, 1);
+          console.log(data)
+          renderTable();
+
+          if (data.expire_item.length === 0) {
+            tableContainer.style.display = "none";
+            console.log(data)
+          }
+        });
+
+        const td4 = document.createElement("td");
+        td4.appendChild(deleteButton);
+        row.appendChild(td4);
+
+        table.appendChild(row);
+      }
+    }
+  }
+
+  renderTable();
 }
+
+
+
+
+
+
+
+
+
+// function plusItems() {
+// const selectItem = document.getElementById("dataSelect");
+// const quantity = document.getElementById("quantity");
+// const expDate = document.getElementById("exp-date");
+
+
+// const item = {
+//     item_name: selectItem.value,
+//     quantity: quantity.value,
+//     expire_date: expDate.value
+//   };
+ 
+//   data.expire_item.push(item);
+
+
+//   data.expire_item.forEach((item, index) => {
+//   if (item.item_name !== "" || item.quantity !== 0 || item.expire_date !== 0) {
+//     const itemName = item.item_name;
+//     const quantity = item.quantity;
+//     const expireDate = item.expire_date;
+
+
+//     console.log(`Item at position ${index + 1}:`);
+//     console.log("Item Name:", itemName);
+//     console.log("Quantity:", quantity);
+//     console.log("Expire Date:", expireDate);
+//   }
+// });
+
+//   selectItem.selectedIndex = 0;
+//   quantity.value = "";
+//   expDate.value = "";
+//   // const plusContainer = document.getElementById("plus-container");
+//   // const newselectItem = `
+//   //   <div class="d-flex align-items-center">
+//   //     <select class="form-control" id="dataSelect-${count}">
+//   //       <option selected>Select</option>
+//   //     </select>
+//   //     <input class="form-control text-center" type="number" placeholder="quantity">
+//   //     <input class="form-control text-center" type="number" placeholder="Day">
+//   //     <button class="btn btn-primary fs-6" type="button">+</button>
+//   //   </div>
+//   // `;
+//   // selectItem(count);
+//   // plusContainer.insertAdjacentHTML('beforeend', newselectItem);
+// }
 
 
 
