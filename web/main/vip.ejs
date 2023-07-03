@@ -291,13 +291,29 @@ const headers = {
       {
           headers: headers ,
           // withCredentials: true
-      }).then(function(response) {
-            let data = response.data;
-            if (response.status === 200) {
-                document.getElementById("vipPay").style.display = 'block';
-                checkAlreadyVIP(response.data.vip_point)
-                console.log(data);
-            }
+      }).then(async function (response) {
+    let data = response.data;
+    if (response.status === 200) {
+      document.getElementById("vipPay").style.display = 'block';
+      await selectItem()
+      checkAlreadyVIP(response.data.vip_point)
+      checkAlreadyExtra(response.data.extra_point)
+      checkAlreadyPermanent(response.data.permanent_point)
+
+      const expire_date = document.getElementById("expire-date")
+      expire_date.textContent = "Expire Date : " + response.data.expire_date;
+
+      const vipPoint = document.getElementById("vipPoint")
+      vipPoint.textContent = "Vip Point : " + response.data.vip_point;
+
+      const extraPoint = document.getElementById("extraPoint")
+      extraPoint.textContent = "Extra Point : " + response.data.extra_point;
+
+      const permanentPoint = document.getElementById("permanent-point")
+      permanentPoint.textContent = "Permanent Point : " + response.data.permanent_point;
+
+      console.log(data);
+    }
   })
 }
 
@@ -323,25 +339,6 @@ async function applyData() {
   })
           .then(async response => {
             console.log('API response:', response.data);
-            document.getElementById("vipPay").style.display = 'block';
-            await selectItem()
-            checkAlreadyVIP(response.data.vip_point)
-            checkAlreadyExtra(response.data.extra_point)
-            checkAlreadyPermanent(response.data.permanent_point)
-
-            const expire_date = document.getElementById("expire-date")
-            expire_date.textContent = "Expire Date : " + response.data.expire_date;
-
-            const vipPoint = document.getElementById("vipPoint")
-            vipPoint.textContent = "Vip Point : " + response.data.vip_point;
-
-            const extraPoint = document.getElementById("extraPoint")
-            extraPoint.textContent = "Extra Point : " + response.data.extra_point;
-
-            const permanentPoint = document.getElementById("permanent-point")
-            permanentPoint.textContent = "Permanent Point : " + response.data.permanent_point;
-
-            console.log(data);
           })
           .catch(error => {
             console.error('API error:', error);
@@ -349,15 +346,21 @@ async function applyData() {
 }
 
     function selectItem() {
-      const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+      // const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
       const apiItem = 'https://circleproject.dev/api/items/vip';
 
-      axios.get(proxyUrl + apiItem, {
-        headers: {
-          'Authorization': 'Basic dGhlY2lyY2xlZGV2OlRoZWNpcmNsZTExMiFAIw==',
-          'X-Requested-With': 'XMLHttpRequest',
-          'Content-Type': 'application/json'
-        },
+      const headers = {
+        // 'Host': 'https://circleproject.dev',
+        // 'Origin': 'https://tx.circleproject.dev',
+        'Access-Control-Allow-Origin': 'https://tx.circleproject.dev',
+        // 'Access-Control-Request-Method' : 'GET',
+        // 'Access-Control-Request-Headers': 'Authorization',
+        // 'Referer': 'https://tx.circleproject.dev',
+        'Authorization': 'Basic dGhlY2lyY2xlZGV2OlRoZWNpcmNsZTExMiFAIw=='
+      }
+
+      axios.get(apiItem, {
+        headers:headers
       })
               .then(function (response) {
                 const data = response.data;
