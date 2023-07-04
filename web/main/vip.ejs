@@ -28,8 +28,7 @@
     </div>
 <div class="row justify-content-center">
     <div id="vipPay" style="display:none">
-      <div class="col-md-5 mw-col6">
-        <!-- <div class="col-md-7 mw-col6"></div> -->
+      <div class="">
         <div class="card card-accent-info">
           <div class="card-header float-left">
             <span class="h5">Player Name</span>
@@ -67,20 +66,20 @@
                 <button type="button" class="btn btn-outline-primary  btn-block" id="extra-0" data-value="0">0</button>
               </div>
               <div class="col">
+                <button type="button" class="btn btn-outline-primary  btn-block" id="extra-100"
+                  data-value="100">100</button>
+              </div>
+              <div class="col">
+                <button type="button" class="btn btn-outline-primary  btn-block" id="extra-200"
+                  data-value="200">200</button>
+              </div>
+              <div class="col">
+                <button type="button" class="btn btn-outline-primary  btn-block" id="extra-300"
+                  data-value="300">300</button>
+              </div>
+              <div class="col">
                 <button type="button" class="btn btn-outline-primary  btn-block" id="extra-500"
                   data-value="500">500</button>
-              </div>
-              <div class="col">
-                <button type="button" class="btn btn-outline-primary  btn-block" id="extra-1000"
-                  data-value="1000">1,000</button>
-              </div>
-              <div class="col">
-                <button type="button" class="btn btn-outline-primary  btn-block" id="extra-1500"
-                  data-value="1500">1,500</button>
-              </div>
-              <div class="col">
-                <button type="button" class="btn btn-outline-primary  btn-block" id="extra-2000"
-                  data-value="2000">2,000</button>
               </div>
             </div>
             <div class="h5 mt-3">Permanant Point</div>
@@ -129,18 +128,19 @@
       </div>
     </div>
     </div>
-
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
   <script>
     let data = {
       vip_point: 0,
       extra_point: 0,
       permanent_point: 0,
-      priority: '',
+      priority: "",
+      identifier: "",
       expire_items : []
     };
 
-
+  let datalabel = []
 
     const vipButtons = document.querySelectorAll('[id^="vip-"]');
     vipButtons.forEach(function (button) {
@@ -294,14 +294,18 @@ const headers = {
           headers: headers ,
           // withCredentials: true
       }).then(async function (response) {
-    let data = response.data;
+    // let data = response.data;
     if (response.status === 200) {
       document.getElementById("vipPay").style.display = 'block';
       await selectItem()
-      checkAlreadyVIP(response.data.vip_point)
-      checkAlreadyExtra(response.data.extra_point)
-      checkAlreadyPermanent(response.data.permanent_point)
+      checkAlreadyVIP(response.data.vip_point);
+      checkAlreadyExtra(response.data.extra_point);
+      checkAlreadyPermanent(response.data.permanent_point);
 
+     
+      data.identifier = response.data.identifier;
+      console.log(data.identifier);
+    
       const expire_date = document.getElementById("expire-date")
       expire_date.textContent = "Expire Date : " + response.data.expire_date;
 
@@ -323,29 +327,48 @@ const headers = {
 async function applyData() {
   let discordIdInput = document.getElementById('discord-id').value;
   console.log(discordIdInput);
-  // const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
-  const apiUrl = `https://circleproject.dev/api/identifier/discord/id/${discordIdInput}`;
   console.log(data)
-  console.log(apiUrl)
+
+  const apiUrl = `https://circleproject.dev/api/identifier/discord/id/${discordIdInput}`;
+  console.log(apiUrl);
+
+
   const headers = {
-    // 'Host': 'https://circleproject.dev',
-    // 'Origin': 'https://tx.circleproject.dev',
     'Access-Control-Allow-Origin': 'https://tx.circleproject.dev',
-    // 'Access-Control-Request-Method' : 'GET',
-    // 'Access-Control-Request-Headers': 'Authorization',
-    // 'Referer': 'https://tx.circleproject.dev',
     'Authorization': 'Basic dGhlY2lyY2xlZGV2OlRoZWNpcmNsZTExMiFAIw=='
-  }
-  await axios.put(apiUrl, data, {
-    headers: headers
-  })
-          .then(async response => {
-            console.log('API response:', response.data);
-          })
-          .catch(error => {
-            console.error('API error:', error);
-          });
+  };
+
+  // Show a confirmation modal using SweetAlert2 before making the API call
+  Swal.fire({
+    title: 'Are you sure?',
+    text: "Do you want to add information?",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#00bf8f',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Confirm'
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      try {
+        const response = await axios.put(apiUrl, data, {
+          headers: headers
+        });
+        Swal.fire(
+          'Add Data!',
+          'The information has been successfully added.',
+          'success',
+          false,
+          '#00bf8f'
+        );
+        
+        console.log('API response:', response.data);
+      } catch (error) {
+        console.error('API error:', error);
+      }
+    }
+  });
 }
+
 
     function selectItem() {
       // const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
@@ -371,6 +394,7 @@ async function applyData() {
                 data.forEach(function (item) {
                   const option = document.createElement("option");
                   option.value = item.item_name;
+                  option.setAttribute('name',  item.item_label);
                   option.textContent = item.item_label;
                   select.appendChild(option);
                 });
@@ -385,38 +409,53 @@ async function applyData() {
   const quantity = document.getElementById("quantity");
   const expDate = document.getElementById("exp-date");
 
+  const selectedOption = selectItem.options[selectItem.selectedIndex];
+  const optionName = selectedOption.getAttribute('name');
+
   const item = {
     item_name: selectItem.value,
-    quantity: quantity.value,
-    expire_date: expDate.value
+    quantity: parseInt(quantity.value) ,
+    expire_date: parseInt(expDate.value)
   };
 
-  data.expire_item.push(item);
+  const itemlabel = {
+    item_label: optionName
+  };
+
+  if (item.item_name !== "" && item.item_name !== selectItem.value[0] && item.quantity !== "" && item.expire_date !== "") {
+    data.expire_items.push(item);
+    datalabel.push(itemlabel);
+    console.log(datalabel);
+  }
 
   selectItem.selectedIndex = 0;
   quantity.value = "";
   expDate.value = "";
-  
+
   const tableContainer = document.getElementById("table-container");
   tableContainer.innerHTML = "";
 
   function renderTable() {
     const table = document.createElement("table");
+    table.classList.add("table", "table-hover", "mt-2");
     const tableHeader = document.createElement("tr");
     const th1 = document.createElement("th");
     const th2 = document.createElement("th");
     const th3 = document.createElement("th");
+    const th4 = document.createElement("th");
     th1.textContent = "Item Name";
-    th2.textContent = "Quantity";
-    th3.textContent = "Expire Date";
+    th2.textContent = "Item label";
+    th3.textContent = "Quantity";
+    th4.textContent = "Expire Date";
     tableHeader.appendChild(th1);
     tableHeader.appendChild(th2);
     tableHeader.appendChild(th3);
+    tableHeader.appendChild(th4);
     table.appendChild(tableHeader);
 
     tableContainer.innerHTML = "";
 
-    if (data.expire_item.length === 0) {
+    if (data.expire_items.length === 0) {
       tableContainer.style.display = "none";
       return;
     } else {
@@ -425,41 +464,48 @@ async function applyData() {
 
     tableContainer.appendChild(table);
 
-    for (let index = 0; index < data.expire_item.length; index++) {
-      const item = data.expire_item[index];
+    for (let index = 0; index < data.expire_items.length || index < datalabel.length; index++) {
+      const item = data.expire_items[index];
+      const itemlabels = datalabel[index];
 
-      if (item.item_name !== "" || item.quantity !== "0" || item.expire_date !== "0") {
+      if (item.item_name !== "" || item.quantity !== "" || item.expire_date !== "" || itemlabels.item_label != "") {
         const row = document.createElement("tr");
         row.id = `row-${index}`;
 
         const td1 = document.createElement("td");
         const td2 = document.createElement("td");
         const td3 = document.createElement("td");
+        const td4 = document.createElement("td");
         td1.textContent = item.item_name;
-        td2.textContent = item.quantity;
-        td3.textContent = item.expire_date;
+        td2.textContent = itemlabels.item_label;
+        td3.textContent = item.quantity;
+        td4.textContent = item.expire_date;
         row.appendChild(td1);
         row.appendChild(td2);
         row.appendChild(td3);
+        row.appendChild(td4);
 
         const deleteButton = document.createElement("button");
+        deleteButton.classList.add("btn", "btn-outline-danger");
         deleteButton.textContent = "Delete";
         deleteButton.addEventListener("click", function() {
           const rowToDelete = document.getElementById(`row-${index}`);
           rowToDelete.remove();
-          data.expire_item.splice(index, 1);
-          console.log(data)
+          data.expire_items.splice(index, 1);
+          datalabel.splice(index, 1);
+          console.log(data);
+          console.log(datalabel);
           renderTable();
 
-          if (data.expire_item.length === 0) {
+          if (data.expire_items.length === 0) {
             tableContainer.style.display = "none";
-            console.log(data)
+            console.log("ไม่มีแล้วจ้า")
           }
         });
 
-        const td4 = document.createElement("td");
-        td4.appendChild(deleteButton);
-        row.appendChild(td4);
+        const td5 = document.createElement("td");
+        td5.appendChild(deleteButton);
+        row.appendChild(td5);
 
         table.appendChild(row);
       }
@@ -468,6 +514,7 @@ async function applyData() {
 
   renderTable();
 }
+
 
 
 
@@ -534,15 +581,6 @@ async function applyData() {
   //   data.item_name = selectedItem;
   //   console.log(data);
   // }
-
-  document.getElementById("dayInput").addEventListener("change", handleDayInputChange);
-
-  function handleDayInputChange() {
-    const dayInput = document.getElementById("dayInput");
-    const dayValue = dayInput.value;
-    data.day = parseInt(dayValue);
-    console.log(data);
-  }
 
   </script>
   <%- await include('parts/footer.ejs', locals) %>
