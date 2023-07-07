@@ -301,10 +301,14 @@ const headers = {
       checkAlreadyVIP(response.data.vip_point);
       checkAlreadyExtra(response.data.extra_point);
       checkAlreadyPermanent(response.data.permanent_point);
+ 
+      data.vip_point = response.data.vip_point;
+      data.extra_point = response.data.extra_point;
+      data.permanent_point = response.data.permanent_point;
+      
 
-     
       data.identifier = response.data.identifier;
-      console.log(data.identifier);
+      console.log(data);
     
       const expire_date = document.getElementById("expire-date")
       expire_date.textContent = "Expire Date : " + response.data.expire_date;
@@ -354,12 +358,14 @@ async function applyData() {
           headers: headers
         });
         Swal.fire(
-          'Add Data!',
-          'The information has been successfully added.',
-          'success',
-          false,
-          '#00bf8f'
-        );
+        'Add Data!',
+        'The information has been successfully added.',
+        'success',
+        false,
+        '#00bf8f'
+      ).then(() => {
+        location.reload(); // Reload the web page after the Swal.fire() is closed
+      });
         
         console.log('API response:', response.data);
       } catch (error) {
@@ -367,6 +373,7 @@ async function applyData() {
       }
     }
   });
+
 }
 
 
