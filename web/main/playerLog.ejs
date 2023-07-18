@@ -27,19 +27,25 @@
   <h3>Player Log</h3>
 </div>
 <div>
+<div class="d-flex justify-content-end">
   <div class="search-container">
-    <input id="search-input" type="text" class="form-control" placeholder="Search">
+    <input id="search-event" type="text" class="form-control" placeholder="Search">
   </div>
-  <div style="overflow-x: scroll;">
+    <div class="search-container">
+    <input id="search-player" type="text" class="form-control" placeholder="Search">
+  </div>
+    <div class="search-container">
+    <input id="search-date" type="text" class="form-control" placeholder="Search">
+  </div>
+  </div>
+
+<div style="overflow-x: scroll;" class="card">
   <table id="data-table" class="table table-hover">
     <thead>
       <tr>
-        <th>Steam</th>
-        <th>Discord</th>
-        <th>License</th>
-        <th>Event</th>
-        <th>Content</th>
+        <th>Event Name</th>
         <th>Player Name</th>
+        <th>Date</th>
       </tr>
     </thead>
     <tbody id="data-body"></tbody>
@@ -93,17 +99,6 @@
       licenseCell.textContent = item.player.identifiers.license;
       row.appendChild(licenseCell);
 
-      const eventCell = document.createElement('td');
-      eventCell.textContent = item.event;
-      row.appendChild(eventCell);
-
-      const contentCell = document.createElement('td');
-      contentCell.textContent = item.content;
-      row.appendChild(contentCell);
-
-      const playerNameCell = document.createElement('td');
-      playerNameCell.textContent = item.player.name;
-      row.appendChild(playerNameCell);
 
       dataBody.appendChild(row);
     });
@@ -144,22 +139,33 @@
   }
 
   function search() {
-  const searchInput = document.getElementById('search-input');
-  const searchKeyword = searchInput.value.trim().toLowerCase();
-  filteredData = data.filter(item => {
-    return (
-      item.player.identifiers.steam.toString().toLowerCase().includes(searchKeyword) ||
-      item.player.identifiers.discord.toString().toLowerCase().includes(searchKeyword) ||
-      item.player.identifiers.license.toString().toLowerCase().includes(searchKeyword) ||
-      item.event.toLowerCase().includes(searchKeyword) ||
-      item.content.toLowerCase().includes(searchKeyword) ||
-      item.player.name.toLowerCase().includes(searchKeyword)
-    );
-  });
+  let searchInput = document.getElementById("search-event").value;
 
-  page = 1;
-  showData();
+  // สร้างอ็อบเจกต์ของ header
+  const headers = {
+    // 'Host': 'https://circleproject.dev',
+    // 'Origin': 'https://tx.circleproject.dev',
+    'Access-Control-Allow-Origin': 'https://tx.circleproject.dev',
+    // 'Access-Control-Request-Method' : 'GET',
+    // 'Access-Control-Request-Headers': 'Authorization',
+    // 'Referer': 'https://tx.circleproject.dev',
+    'Authorization': 'Basic dGhlY2lyY2xlZGV2OlRoZWNpcmNsZTExMiFAIw=='
 }
+  axios.get('https://api.example.com/search', {
+    params: {
+      query: searchInput
+    },
+    headers: headers  
+  })
+  .then(function(response) {
+    console.log(response.data);
+  })
+  .catch(function(error) {
+    console.log('ล้มเหลวจ้าาา', error);
+  });
+}
+
+
 
 
   document.getElementById('previous-page').addEventListener('click', goToPreviousPage);

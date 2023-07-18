@@ -137,7 +137,8 @@
       permanent_point: 0,
       priority: "",
       identifier: "",
-      expire_items : []
+      expire_items : [],
+      discord_id : ""
     };
 
   let datalabel = []
@@ -276,7 +277,9 @@
 
 
 async function checkUser(){
+  
   let discordIdInput = document.getElementById('discord-id').value;
+  data.discord_id = discordIdInput;
 // const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
 const apiUrl = `https://circleproject.dev/api/identifier/discord/id/${discordIdInput}`;
 const headers = {
@@ -364,11 +367,16 @@ async function applyData() {
         false,
         '#00bf8f'
       ).then(() => {
-        location.reload(); // Reload the web page after the Swal.fire() is closed
+        location.reload(); 
       });
         
         console.log('API response:', response.data);
       } catch (error) {
+        Swal.fire(
+        'Error!',
+        'An error occurred while adding the information.',
+        'error'
+      );
         console.error('API error:', error);
       }
     }
