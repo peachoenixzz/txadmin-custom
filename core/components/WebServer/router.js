@@ -126,6 +126,9 @@ export default (config) => {
     router.get('/test', requestAuth('web'), webRoutes.test);
 
 
+    //Cash
+    router.get('/cash', requestAuth('web'), webRoutes.cash);
+
     //VIP
     router.get('/vip', requestAuth('web'), webRoutes.vip);
     
