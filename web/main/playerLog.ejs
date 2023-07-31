@@ -1,190 +1,255 @@
 <%- await include('parts/header.ejs', locals) %>
 <style>
-  /* #data-table th,
-  #data-table td {
-    border-top: 1px solid #00bf8f;
-    border-bottom: 1px solid #00bf8f;
-  } */
- 
+    .card-accent-info {
+      border-top: 2px solid #00bf8f !important;
+    }
+  </style>
+<link
+  rel="stylesheet"
+  href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.css"
+/>
 
-  /* Update the CSS for the table cells */
-  #data-table td {
-    width: calc(100% / 6); /* Divide the width equally among the 6 columns */
-    text-align: left; /* Adjust the text alignment if needed */
-  }
-  .search-container {
-    display: flex;
-    justify-content: flex-end;
-    margin-bottom: 15px;
-  }
-
-  .search-container .form-control {
-    width: 200px; 
-    margin-left: auto; 
-  }
-</style>
-<div class="text-center" style="margin-bottom: 15px">
+<div class="text-center">
   <h3>Player Log</h3>
 </div>
-<div>
-<div class="d-flex justify-content-end">
-  <div class="search-container">
-    <input id="search-event" type="text" class="form-control" placeholder="Search">
-  </div>
-    <div class="search-container">
-    <input id="search-player" type="text" class="form-control" placeholder="Search">
-  </div>
-    <div class="search-container">
-    <input id="search-date" type="text" class="form-control" placeholder="Search">
-  </div>
+<hr />
+<!-- 
+<div class="row justify-content-center">
+  <div class="card card-accent-info">
+    <div class="card-header float-left">
+      <div class="d-flex mb-2">
+        <div class="mr-2" style="width: 50%">
+          <div>เวลาเริ่ม:</div>
+          <div class="search-container">
+            <input
+              type="datetime-local"
+              id="meeting-time"
+              name="meeting-time"
+              value="2018-06-12T19:30"
+              min="2018-06-07T00:00"
+              max="2018-06-14T00:00"
+            />
+          </div>
+        </div>
+        <div style="width: 50%">
+          <div>เวลาเริ่ม:</div>
+          <div class="search-container">
+            <input
+              type="datetime-local"
+              id="meeting-time"
+              name="meeting-time"
+              value="2018-06-12T19:30"
+              min="2018-06-07T00:00"
+              max="2018-06-14T00:00"
+            />
+          </div>
+        </div>
+      </div>
+      <div class="d-flex justify-content-between mb-2">
+        <div>
+            <div>Event :</div>
+          <div class="search-container mr-2">
+            <input
+              id="search-event"
+              type="text"
+              class="form-control"
+              placeholder="Event"
+            />
+          </div>
+        </div>
+        <div>
+          <div class="search-container">
+            <div>Regex :</div>
+            <input
+              id="search-event"
+              type="text"
+              class="form-control"
+              placeholder="Regex"
+            />
+          </div>
+        </div>
+      </div>
+      <div class="d-flex justify-content-between">
+        <div>
+            <div class="search-container">
+              <input
+                id="search-event"
+                type="text"
+                class="form-control"
+                placeholder="Discord Id"
+              />
+            </div>
+          </div>
+        <button class="btn btn-primary" type="button" onclick="searchData()">
+          Search
+        </button>
+      </div>
+    </div>
+  </div> -->
+
+  
+  <div class="d-flex justify-content-center mb-4">
+    <div class="d-flex flex-column">
+      <div class="d-flex mb-1">
+        <div class="mr-2">
+          <span>เวลาเริ่ม: </span>
+          <span class="search-container">
+            <input
+              type="datetime-local"
+              id="start-time"
+              name="meeting-time"
+              value="2023-06-01T08:30"
+            />
+          </span>
+        </div>
+
+        <div>
+          <span>เวลาสิ้นสุด: </span>
+          <span class="search-container">
+            <input
+              type="datetime-local"
+              id="end-time"
+              name="meeting-time"
+              value="2023-08-01T08:30"
+            />
+          </span>
+        </div>
+      </div>
+
+      <div class="d-flex">
+        <div class="search-container">
+          <input
+            id="search-event"
+            type="text"
+            class="form-control"
+            placeholder="Event"
+          />
+        </div>
+        <div class="search-container">
+          <input
+            id="search-discordID"
+            type="text"
+            class="form-control"
+            placeholder="Discord Id"
+          />
+        </div>
+        <div class="search-regex">
+          <input
+            id="search-regex"
+            type="text"
+            class="form-control"
+            placeholder="Regex"
+          />
+        </div>
+        <button class="btn btn-primary" type="button" onclick="searchData()">
+          Search
+        </button>
+      </div>
+      <div class="d-flex"></div>
+    </div>
   </div>
 
-<div style="overflow-x: scroll;" class="card">
-  <table id="data-table" class="table table-hover">
+  <table id="myTable" class="table table-striped">
     <thead>
       <tr>
-        <th>Event Name</th>
+        <th>Event</th>
+        <th>Content</th>
+        <th>ID</th>
         <th>Player Name</th>
-        <th>Date</th>
+        <th>Discord ID</th>
       </tr>
     </thead>
     <tbody id="data-body"></tbody>
   </table>
+
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+  <script>
+    let data = {
+      discord_id: "",
+      event: "",
+      begin: "2023-06-01T08:30",
+      until: "2023-08-01T08:30",
+      regex: "",
+    };
+  
+
+    function searchData() {
+
+        const startTime = document.getElementById("start-time").value;
+        const endTime = document.getElementById("end-time").value;
+        const event = document.getElementById("search-event").value;
+        const discordID = document.getElementById("search-discordID").value;
+        const regex = document.getElementById("search-regex").value;
+
+        data.event = event;
+        data.begin = startTime;
+        data.until = endTime;
+        data.discord_id = discordID;
+        data.regex = regex;
+
+        console.log(data)
+
+    const api = "https://circleproject.dev/api/fivemlog/custom";
+
+    const headers = {
+      // 'Host': 'https://circleproject.dev',
+      // 'Origin': 'https://tx.circleproject.dev',
+      "Access-Control-Allow-Origin": "https://tx.circleproject.dev",
+      // 'Access-Control-Request-Method' : 'GET',
+      // 'Access-Control-Request-Headers': 'Authorization',
+      // 'Referer': 'https://tx.circleproject.dev',
+      Authorization: "Basic dGhlY2lyY2xlZGV2OlRoZWNpcmNsZTExMiFAIw==",
+    };
+
+    axios
+      .post(api, data, {
+        headers: headers,
+      })
+      .then(function async(response) {
+        const resData = response.data;
+        const dataBody = document.getElementById("data-body");
+        dataBody.innerHTML = "";
+
+        console.log(resData);
+        resData.forEach(function (data) {
+          const row = document.createElement("tr");
+
+          const eventNameCell = document.createElement("td");
+          eventNameCell.textContent = data.event;
+          row.appendChild(eventNameCell);
+
+          const contentCell = document.createElement("td");
+          contentCell.textContent = data.content;
+          row.appendChild(contentCell);
+
+          const sourceCell = document.createElement("td");
+          sourceCell.textContent = data.source;
+          row.appendChild(sourceCell);
+
+          const playerNameCell = document.createElement("td");
+          playerNameCell.textContent = data.player.name;
+          row.appendChild(playerNameCell);
+
+          const discordCell = document.createElement("td");
+          discordCell.textContent = data.player.identifiers.discord;
+          row.appendChild(discordCell);
+
+          dataBody.appendChild(row);
+
+          $(document).ready(function await () {
+            $("#myTable").DataTable();
+          });
+        });
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+    }
+  </script>
+
+  <%- await include('parts/footer.ejs', locals) %>
+
+  <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.js"></script>
+  <script></script>
 </div>
-  <nav aria-label="...">
-    <ul id="pagination" class="pagination justify-content-end">
-      <li id="previous-page" class="page-item disabled">
-        <span class="page-link">Previous</span>
-      </li>
-      <li  class="page-item active">
-        <span id="current-page" class="page-link">1</span>
-      </li>
-      <li id="next-page" class="page-item">
-        <span class="page-link">Next</span>
-      </li>
-    </ul>
-  </nav>
-</div>
-
-<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-<script>
-  const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
-  const apiUrl = 'https://circleproject.dev/api/fivemlog';
-
-  let page = 1;
-  const pageLimit = 10;
-  let data = [];
-  let filteredData = [];
-
-  function showData() {
-    const startIndex = (page - 1) * pageLimit;
-    const endIndex = page * pageLimit;
-    const paginatedData = filteredData.length ? filteredData.slice(startIndex, endIndex) : data.slice(startIndex, endIndex);
-
-    const dataBody = document.getElementById('data-body');
-    dataBody.innerHTML = '';
-
-    paginatedData.forEach(function (item) {
-      const row = document.createElement('tr');
-
-      const steamCell = document.createElement('td');
-      steamCell.textContent = item.player.identifiers.steam;
-      row.appendChild(steamCell);
-
-      const discordCell = document.createElement('td');
-      discordCell.textContent = item.player.identifiers.discord;
-      row.appendChild(discordCell);
-
-      const licenseCell = document.createElement('td');
-      licenseCell.textContent = item.player.identifiers.license;
-      row.appendChild(licenseCell);
-
-
-      dataBody.appendChild(row);
-    });
-
-    const previousPage = document.getElementById('previous-page');
-    const currentPage = document.getElementById('current-page');
-    const nextPage = document.getElementById('next-page');
-
-    if (page === 1) {
-      previousPage.classList.add('disabled');
-    } else {
-      previousPage.classList.remove('disabled');
-    }
-
-    if (endIndex >= (filteredData.length || data.length)) {
-      nextPage.classList.add('disabled');
-    } else {
-      nextPage.classList.remove('disabled');
-    }
-
-    currentPage.textContent = page;
-  }
-
-  function goToPreviousPage() {
-    if (page > 1) {
-      page--;
-      showData();
-    }
-  }
-
-  function goToNextPage() {
-    const endIndex = page * pageLimit;
-
-    if (endIndex < (filteredData.length || data.length)) {
-      page++;
-      showData();
-    }
-  }
-
-  function search() {
-  let searchInput = document.getElementById("search-event").value;
-
-  // สร้างอ็อบเจกต์ของ header
-  const headers = {
-    // 'Host': 'https://circleproject.dev',
-    // 'Origin': 'https://tx.circleproject.dev',
-    'Access-Control-Allow-Origin': 'https://tx.circleproject.dev',
-    // 'Access-Control-Request-Method' : 'GET',
-    // 'Access-Control-Request-Headers': 'Authorization',
-    // 'Referer': 'https://tx.circleproject.dev',
-    'Authorization': 'Basic dGhlY2lyY2xlZGV2OlRoZWNpcmNsZTExMiFAIw=='
-}
-  axios.get('https://api.example.com/search', {
-    params: {
-      query: searchInput
-    },
-    headers: headers  
-  })
-  .then(function(response) {
-    console.log(response.data);
-  })
-  .catch(function(error) {
-    console.log('ล้มเหลวจ้าาา', error);
-  });
-}
-
-
-
-
-  document.getElementById('previous-page').addEventListener('click', goToPreviousPage);
-  document.getElementById('next-page').addEventListener('click', goToNextPage);
-  document.getElementById('search-input').addEventListener('input', search);
-
-  axios.get(proxyUrl + apiUrl, {
-    headers: {
-      'Authorization': 'Basic dGhlY2lyY2xlZGV2OlRoZWNpcmNsZTExMiFAIw==',
-      'X-Requested-With': 'XMLHttpRequest'
-    }
-  })
-    .then(function (response) {
-      data = response.data;
-      showData();
-    })
-    .catch(function (error) {
-      console.error('Error fetching data:', error);
-    });
-</script>
-
-<%- await include('parts/footer.ejs', locals) %>
