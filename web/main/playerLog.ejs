@@ -149,7 +149,7 @@
     </div>
   </div>
 
-  <table id="myTable" class="table table-striped">
+  <table id="myTable" class="table table-striped" >
     <thead>
       <tr>
         <th>Event</th>
@@ -157,13 +157,13 @@
         <th>ID</th>
         <th>Player Name</th>
         <th>Discord ID</th>
+        <th>Time Stamp</th>
       </tr>
     </thead>
     <tbody id="data-body"></tbody>
   </table>
 
   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-
   <script>
     let data = {
       discord_id: "",
@@ -213,6 +213,8 @@
 
         console.log(resData);
         resData.forEach(function (data) {
+          const formattedDateTime = convertDateTime(data.timestamp);
+
           const row = document.createElement("tr");
 
           const eventNameCell = document.createElement("td");
@@ -235,6 +237,11 @@
           discordCell.textContent = data.player.identifiers.discord;
           row.appendChild(discordCell);
 
+          const timestarpCell = document.createElement("td");
+          timestarpCell.textContent = formattedDateTime;
+          row.appendChild(timestarpCell);
+
+
           dataBody.appendChild(row);
 
           $(document).ready(function await () {
@@ -246,6 +253,28 @@
         console.log(error);
       });
     }
+
+    function convertDateTime(dateTime) {
+  const isoDateTime = new Date(dateTime);
+
+  
+  const day = isoDateTime.getDate();
+  const month = isoDateTime.getMonth() + 1; 
+  const year = isoDateTime.getFullYear();
+
+
+  const hours = isoDateTime.getHours();
+  const minutes = isoDateTime.getMinutes();
+  const seconds = isoDateTime.getSeconds();
+
+  const formattedDate = `${day}/${month}/${year}`;
+  const formattedTime = `${hours}:${minutes}:${seconds}`;
+
+ 
+  const formattedDateTime = `${formattedDate}:${formattedTime}`;
+
+  return formattedDateTime;
+}
   </script>
 
   <%- await include('parts/footer.ejs', locals) %>
