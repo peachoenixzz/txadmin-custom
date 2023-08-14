@@ -53,8 +53,8 @@
             </div>  
             <div class="card-header" style="border: 0px;">
         <div class="d-flex justify-content-between">
-          <div class="h5">Player Name</div>
-          <div class="h5"><span>100,000</span> CC</div>
+          <div class="h5" id="player-name">Player Name</div>
+          <div class="h5"><span id="point">100,000</span> CC</div>
         </div>
           <input
             class="form-control mt-3"
@@ -83,7 +83,11 @@
   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
   <script>
   
-   let data = {};
+   let data = {
+    identifier: "",
+    discord_id: "",
+    cashPoint: 0
+   };
 
 
 
@@ -99,9 +103,11 @@
 
   async function checkUser() {
     let discordIdInput = document.getElementById("discord-id").value;
+    let playerName = document.getElementById("player-name");
+    let point = document.getElementById("point")
     // const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
     // const apiUrl = `https://circleproject.dev/api/identifier/discord/id/${discordIdInput}`;
-    const apiUrl = "";
+    const apiUrl = `http://localhost:1323/cash/${discordIdInput}`;
     const headers = {
       // 'Host': 'https://circleproject.dev',
       // 'Origin': 'https://tx.circleproject.dev',
@@ -121,6 +127,13 @@
         // let data = response.data;
         if (response.status === 200) {
           document.getElementById("addCashContainer").style.display = "block";
+          playerName.innerHTML = response.data.first_name + " " + response.data.last_name;
+          point.innerHTML = response.data.point;
+          data.identifier = response.data.identifier;
+          data.discord_id = discordIdInput;
+        }
+        else{
+          document.getElementById("addCashContainer").style.display = "none";
         }
       });
   }
@@ -128,9 +141,12 @@
   async function addCash() {
     let discordIdInput = document.getElementById("discord-id").value;
     let amountCash = document.getElementById("amount-cash").value;
+    data.cashPoint = parseInt(amountCash);
+
+
     console.log(data);
 
-    const apiUrl = `https://circleproject.dev/api/identifier/discord/id/${discordIdInput}`;
+    const apiUrl = `http://localhost:1323/cash/${discordIdInput}`;
     console.log(apiUrl);
 
     const headers = {
