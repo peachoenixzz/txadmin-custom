@@ -160,7 +160,7 @@
         <th>Time Stamp</th>
       </tr>
     </thead>
-    <tbody id="data-body"></tbody>
+    <tbody></tbody>
   </table>
 
   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
@@ -207,47 +207,29 @@
         headers: headers,
       })
       .then(function async(response) {
+  
         const resData = response.data;
-        const dataBody = document.getElementById("data-body");
-        dataBody.innerHTML = "";
+        console.log(resData)
+      
+        const table = $("#myTable").DataTable();
 
-        console.log(resData);
-        resData.forEach(function (data) {
-          const formattedDateTime = convertDateTime(data.timestamp);
+ 
+  table.clear().draw();
+  resData.forEach(function (data) {
+   
+    const formattedDateTime = convertDateTime(data.timestamp);
 
-          const row = document.createElement("tr");
+    table.row.add([
+      data.event,
+      data.content,
+      data.source,
+      data.player.name,
+      data.player.identifiers.discord,
+      formattedDateTime,
+    ]);
 
-          const eventNameCell = document.createElement("td");
-          eventNameCell.textContent = data.event;
-          row.appendChild(eventNameCell);
-
-          const contentCell = document.createElement("td");
-          contentCell.textContent = data.content;
-          row.appendChild(contentCell);
-
-          const sourceCell = document.createElement("td");
-          sourceCell.textContent = data.source;
-          row.appendChild(sourceCell);
-
-          const playerNameCell = document.createElement("td");
-          playerNameCell.textContent = data.player.name;
-          row.appendChild(playerNameCell);
-
-          const discordCell = document.createElement("td");
-          discordCell.textContent = data.player.identifiers.discord;
-          row.appendChild(discordCell);
-
-          const timestarpCell = document.createElement("td");
-          timestarpCell.textContent = formattedDateTime;
-          row.appendChild(timestarpCell);
-
-
-          dataBody.appendChild(row);
-
-          $(document).ready(function await () {
-            $("#myTable").DataTable();
-          });
-        });
+  table.draw();
+    });
       })
       .catch(function (error) {
         console.log(error);
@@ -257,24 +239,29 @@
     function convertDateTime(dateTime) {
   const isoDateTime = new Date(dateTime);
 
-  
   const day = isoDateTime.getDate();
   const month = isoDateTime.getMonth() + 1; 
   const year = isoDateTime.getFullYear();
-
 
   const hours = isoDateTime.getHours();
   const minutes = isoDateTime.getMinutes();
   const seconds = isoDateTime.getSeconds();
 
-  const formattedDate = `${day}/${month}/${year}`;
-  const formattedTime = `${hours}:${minutes}:${seconds}`;
+  // เพิ่มเลข 0 นำหน้าถ้าเป็นเลขเดียว
+  const formattedDay = day < 10 ? `0${day}` : day;
+  const formattedMonth = month < 10 ? `0${month}` : month;
+  const formattedHours = hours < 10 ? `0${hours}` : hours;
+  const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
+  const formattedSeconds = seconds < 10 ? `0${seconds}` : seconds;
 
- 
+  const formattedDate = `${formattedDay}/${formattedMonth}/${year}`;
+  const formattedTime = `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+
   const formattedDateTime = `${formattedDate}:${formattedTime}`;
-
+ 
   return formattedDateTime;
 }
+
   </script>
 
   <%- await include('parts/footer.ejs', locals) %>
