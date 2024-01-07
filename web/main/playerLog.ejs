@@ -98,7 +98,6 @@
               type="datetime-local"
               id="start-time"
               name="meeting-time"
-              value="2023-06-01T08:30"
             />
           </span>
         </div>
@@ -110,7 +109,6 @@
               type="datetime-local"
               id="end-time"
               name="meeting-time"
-              value="2023-08-01T08:30"
             />
           </span>
         </div>
@@ -237,30 +235,45 @@
     }
 
     function convertDateTime(dateTime) {
-  const isoDateTime = new Date(dateTime);
+      const isoDateTime = new Date(dateTime);
 
-  const day = isoDateTime.getDate();
-  const month = isoDateTime.getMonth() + 1; 
-  const year = isoDateTime.getFullYear();
+      const day = isoDateTime.getDate();
+      const month = isoDateTime.getMonth() + 1; 
+      const year = isoDateTime.getFullYear();
 
-  const hours = isoDateTime.getHours();
-  const minutes = isoDateTime.getMinutes();
-  const seconds = isoDateTime.getSeconds();
+      const hours = isoDateTime.getHours();
+      const minutes = isoDateTime.getMinutes();
+      const seconds = isoDateTime.getSeconds();
 
-  // เพิ่มเลข 0 นำหน้าถ้าเป็นเลขเดียว
-  const formattedDay = day < 10 ? `0${day}` : day;
-  const formattedMonth = month < 10 ? `0${month}` : month;
-  const formattedHours = hours < 10 ? `0${hours}` : hours;
-  const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
-  const formattedSeconds = seconds < 10 ? `0${seconds}` : seconds;
+      // เพิ่มเลข 0 นำหน้าถ้าเป็นเลขเดียว
+      const formattedDay = day < 10 ? `0${day}` : day;
+      const formattedMonth = month < 10 ? `0${month}` : month;
+      const formattedHours = hours < 10 ? `0${hours}` : hours;
+      const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
+      const formattedSeconds = seconds < 10 ? `0${seconds}` : seconds;
 
-  const formattedDate = `${formattedDay}/${formattedMonth}/${year}`;
-  const formattedTime = `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+      const formattedDate = `${formattedDay}/${formattedMonth}/${year}`;
+      const formattedTime = `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
 
-  const formattedDateTime = `${formattedDate}:${formattedTime}`;
- 
-  return formattedDateTime;
-}
+      const formattedDateTime = `${formattedDate}:${formattedTime}`;
+    
+      return formattedDateTime;
+   }
+
+   let startTimeInput = document.getElementById('start-time');
+   let endTimeInput = document.getElementById('end-time');
+
+      setInterval(function () {
+        let now = new Date();
+        let year = now.getFullYear();
+        let month = ('0' + (now.getMonth() + 1)).slice(-2);
+        let day = ('0' + now.getDate()).slice(-2);
+        let hours = ('0' + now.getHours()).slice(-2);
+        let minutes = ('0' + now.getMinutes()).slice(-2);
+
+        startTimeInput.value = year + '-' + month + '-' + day + 'T' + hours + ':' + minutes;
+        endTimeInput.value = year + '-' + month + '-' + day + 'T' + hours + ':' + minutes;
+      }, 1000);
 
   </script>
 
