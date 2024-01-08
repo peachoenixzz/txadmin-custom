@@ -163,6 +163,9 @@
 
   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
   <script>
+     timeInit()
+
+
     let data = {
       discord_id: "",
       event: "",
@@ -260,10 +263,13 @@
       return formattedDateTime;
    }
 
-   let startTimeInput = document.getElementById('start-time');
-   let endTimeInput = document.getElementById('end-time');
 
-      setInterval(function () {
+
+    function timeInit () {
+
+      let startTimeInput = document.getElementById('start-time');
+      let endTimeInput = document.getElementById('end-time');
+
         let now = new Date();
         let year = now.getFullYear();
         let month = ('0' + (now.getMonth() + 1)).slice(-2);
@@ -273,7 +279,7 @@
 
         startTimeInput.value = year + '-' + month + '-' + day + 'T' + hours + ':' + minutes;
         endTimeInput.value = year + '-' + month + '-' + day + 'T' + hours + ':' + minutes;
-      }, 1000);
+      }
 
   </script>
 
