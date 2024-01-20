@@ -1,124 +1,373 @@
-# TODO:
-- [x] fix diagnostics data error on pterodactyl
-- [x] new console utility + refactoring
-- [x] change dashboard median player message
-- [x] check why the bot cannot use an announcement channel for announcements (isTextBased() issue?)
-- [x] merge translations
-- [x] whitelist "discord no id" message should tell the user to open discord desktop
-- [x] update most packages
-- [x] ConfigVault.saveProfile should probably throw the error up
-- [x] fix: menu > send announcement does not trigger discord msg nor custom event
-- [x] migrate discord announcements to use embeds
-- [x] improve sv_main join check error handling
-- [x] fix "unknown" in playerlist caused by DropPlayer at playerConnecting events
-- [x] global socket.io connection for playerlist
-- [x] fix(bot): use cache when resolving members when possible
-- [x] merge menu performance PRs
-- [X] Resource: fix spectate (merge changes from taso's pr)
-- [x] Resource: fix noclip game crashes
-- [x] Resource: do all files need to check env with `GetConvar` or can i do it only in `shared.lua`?
-- [x] Resource: add `GetConvarBool` and refactor existing `GetConvar` calls
-- [x] Resource: Refactor the debug vars and debugPrint
-    - [x] move the debug code form `menu/sv_base.lua` to somewhere else
-    - [x] by disabling the server stuff, need to make sure none of the global variables set by it are required in non-menu code
-- [x] Resource: Clean the prints from the client (search with `\Wprint\(`)
-- [x] Resource: Clean the print functions on the server (txPrint?)
-- [x] Web: test all pages I added `checkApiLogoutRefresh`
-- [x] Resource: refactor `/txAdmin-reauth` to return the full cause in the snackbar
-- [x] Resource: reorder `sv_main.lua` and add `local` prefix to most if not all functions
-- [x] Resource: rename menu events to `txsv:xxx` and `txcl:xxx`
-- [x] Resource: full redm compatibility
-    - [x] Player Mode
-        - [x] noclip
-            - [x] controls
-            - [x] bug: after exiting, the mouse doesn't move
-            - [x] fix behavior while seated on vehicle or horse
-            - [x] scaleform/prompt
-        - [x] god mode
-        - [x] super jump
-            - [x] fix stamina bug
-        - [x] normal
-        - [x] particles
-    - [x] Teleport
-        - [x] waypoint
-        - [x] coords
-        - [x] back
-        - [x] copy coords
-    - [x] Vehicle
-        - [x] spawn
-        - [x] fix
-        - [x] delete
-        - [x] boost (doesn't work, disable button)
-    - [x] Heal
-        - [x] self
-        - [x] everyone
-    - [x] Announcements
-    - [x] reset world area (doesn't work, disable button)
-    - [x] player ids
-    - [x] logger (death reasons, explosions, etc)
+# TODO: v7.0.0 Release
+- [x] terminal: fix scroll to bottom not detecting scroll events
+- [x] ~~make sure some user input based fields are truncated (admin/server/player name)~~ good enough
+- [x] FIXME: console disable input if no write perms
+    - do we need to check for view perms in the page itself or just the menu is enough?
+- [x] FIXME: global settings not updating everywhere when saving settings
+    - this means deprecating globals.config  in favor of globals.txAdmin.globalConfig
+- [x] Remove old live console menu links
+- [x] FIXME: server sidebar tooltips are under the terminal
+- [x] FIXME: terminal not fitting correctly when zoom is not 100% and font size is not the default 16px
+- [x] FIXME: toasts going forever or with undefined error if you run them fast
+    - specifically can happen to the server restart button
 
-    - [x] Actions
-        - [x] heal
-        - [x] go to
-        - [x] bring
-        - [x] spectate
-            - [x] copy prompt helper from freecam
-        - [x] freeze
-        - [x] troll: set drunk
-        - [x] troll: set fire
-        - [x] troll: wild attack
+- [x] zap hosting advertisement + discord link on login page
+- [x] Add clear copyright/license notice at the bottom of the server sidebar?
+- [ ] talk to r* and make sure the new build process wipes the old cache
 
-- [x] Generalize the sound function in `cl_misc.lua` and replace the other `PlaySoundFrontend`
-- [x] Make Z optional in tp to coords feature
-- [x] Vehicle spawn should accept `[horse, cart, boat]` options, maybe add the buttons
-- [x] Find out why the players page doesn't reflect the player health, maybe it is client side only?
-- [x] Deprecate `cl_misc.lua`: move `playLibrarySound` to `cl_functions`, the rest to `cl_base`
+- [x] deprecate StatisticsManager.pageViews as its now untrackable?
+- [x] check all discord invites (use utm params maybe?)
+- [x] onesync should be legacy by default
 
-- [x] make `recipes/indexv4.json` dropping version and adding tags
-    - drop author field as well?
-    - remove zap esx pack? last update was 6 months ago
-- [x] add `sv_enforceGameBuild 2699` for fivem recipe
-- [x] add redm cfx default recipe (use `sv_enforceGameBuild 1491`)
-- [x] Check again for any added `print()`
-- [x] Update packages... again
-- [x] add hwid token bans (#446)
-    - [x] save player hwids + ban with hwid + check join using hwid as well
-    - [x] rename `action[].identifiers` to `action[].ids`
-    - [x] add settings page option to configure the required hwid matches
-    - [x] add ban message clarification if its from another license
-    - [x] add an option to wipe all hwids from the database
-- [x] add hwids to player modals
-- [x] add vorp recipe
-    - [x] reorganize folder
-    - [x] `server.cfg`:
-        - set steam_webApiKey "{{steam_webApiKey}}"
-        - clean the lines at the end of server.cfg
-        - server.cfg fix exec line 40 [vorp_official_plugins]
-    - [x] find out where that .replxx_history is coming from
-> beta1 release
+- [ ] fix issue where the forced password change on save reloads the page instead of moving to the identifiers tab
+- [ ] easter egg with some old music? https://www.youtube.com/watch?v=nNoaXej0Jeg
+- [ ] tutorial stepper for the new UI?
+- [ ] update docs on development?
 
-- [x] fix system log page font fallback
-- [x] remove debug noclip command
-- [x] fix playerBanned and actionRevoked events playerIds and add playerHwids
-- [x] updated some packages
-- [x] fix adminvault behavior on empty `admins.json` file
-- [x] change `cl_main.lua` RedM detection
-- [x] check/merge redm vehicle boost
-> beta2 release
+=======================================================================
 
-- [x] bot should check if it has any dangerous permission
-- [x] improve zap/ptero detection
-- [x] flexibilized ad options
-- [x] stats: 
-    - [x] adapt the new runtime specs, separate temp stats from classic stats
-    - [x] add bot enabled / whitelist back into stats
-    - [x] add isPterodactyl to stats
-    - [x] start tracking the ban search duration
-    - [x] jwe
-    - [x] don't forget to reset StatisticsManager's cron func interval
-    - [x] when changing whitelist mode in settings, need to reset the time counter
-- [x] add mongolian translation + merge bg.json
-- [x] last round of testing everything
+
+
+
+
+wget $(curl -s https://api.github.com/repos/tabarra/txadmin/releases/latest | grep "browser_download_url.*monitor.zip" | cut -d '"' -f 4)
+
+wget $(curl -s https://api.github.com/repos/tabarra/txadmin/releases/latest | jq -r '.assets[] | select(.name == "monitor.zip") | .browser_download_url')
+
+
+
+=======================================================================
+
+# TODO: v7.1+
+- [ ] feat(menu): add keymapping for tp to waypoint (PR #886)
+- [ ] fix(nui/PlayerModel): require OneSync for bring and goto (PR #851)
+- [ ] Remove old live console legacy code
+- [ ] can I remove `/nui/resetSession`? I think we don't even use cookies anymore
+- [ ] fix the tsc build
+
+- [ ] NEW PAGE: Dashboard
+    - [ ] number callouts from legacy players page
+    - [ ] warning for dev builds of txadmin
+    - [ ] warning for top servers
+- [ ] NEW PAGEs: Console log + Action log
+- [ ] NEW PAGE: Players
+- [ ] NEW PAGE: History
+
+- [ ] console nav button to jump to server start or errors?
+- [ ] cfg parser: resource relative read errors shouldn't trigger warnings
+- [ ] check again for the need of lazy loading
+- [ ] put in server name in the login page, to help lost admins notice they are in the wrong txAdmin
+
+
+=======================================================================
+
+### v7 Menus:
+- Server:
+    - Dashboard
+    - Live Console
+    - Resources
+    - Server Log
+    - CFG Editor
+    - Advanced
+- Global:
+    - Players
+    - History
+    - Whitelist
+    - Admins
+    - Settings
+    - System \/
+        - Master Actions
+        - Diagnostics
+        - Console Log
+        - Action Log
+=======================================================================
+
+This worked, no time to check which. 
+Note it's in the core root and not in the `types` folder, also it has an `export` before the declaration.
+```js
+//file: core/global.d.ts
+export declare global {
+    const globals: any;
+    namespace globalThis {
+        interface Console {
+            xxxx: any
+        }
+    }
+    namespace NodeJS {
+        interface Global {
+            xxxx: any
+        }
+    }
+    interface Console {
+        exampleProperty: string;
+    }
+}
+```
+
+```js
+import bytes from 'bytes';
+import fs from 'node:fs';
+const srcDb = 'E:\\FiveM\\txData\\default\\data\\playersDB.json';
+const destFile = 'E:\\TMP\\deletar-referencias-tx\\playersDB.json'
+const currRss = () => bytes(process.memoryUsage().rss);
+import stream from 'stream';
+
+import Chain from 'stream-chain';
+import Disassembler from 'stream-json/Disassembler.js';
+import Stringer from 'stream-json/Stringer.js';
+
+export const saveToFileStreaming = (hugeArrayOfObjects: any) => {
+    new Chain([
+        stream.Readable.from(hugeArrayOfObjects, { objectMode: true }),
+        new Disassembler(),
+        new Stringer(),
+        fs.createWriteStream(destFile)
+    ])
+}
+
+setInterval(() => {
+    console.log('.');
+}, 100);
+
+console.log('RSS before read:', currRss());
+const dbo = JSON.parse(fs.readFileSync(srcDb, 'utf8'));
+console.log('RSS after read:', currRss());
+console.log('DB Players:', dbo.players.length);
+
+console.log('Awaiting 30s...');
+setTimeout(() => {
+    console.log('RSS before write:', currRss());
+    console.time('stringify+write');
+    const dboString = JSON.stringify([dbo]);
+    fs.writeFileSync(destFile, dboString);
+    // saveToFileStreaming([dbo]);
+    console.timeEnd('stringify+write');
+    console.log('RSS after write:', currRss());
+}, 30*1000);
+
+//normal 202 -> 714mb, em 450ms
+//lib 202 -> weird 1gb peak
+```
+
+=======================================================================
+
+## src
+- assets
+- components
+    - shadcn
+        - ...components installed by shadcn cli - no touchy!
+    - ...shared components
+- pages
+    - login
+        - index.tsx (the actual page component)
+        - ...whatever components are used just in the login page
+    - dashboard
+        - index.tsx (the actual page component)
+        - PerformanceChart.tsx
+        - PlayerChart.tsx
+- layout
+    - MainLayout.tsx
+    - Header.tsx
+    - LeftSidebar.tsx
+    - RightSidebar.tsx
+- hooks
+- lib
+
+### panel z-order
+z-10    UI: server/playerlist asides
+z-10    shadcn: NavigationMenu
+z-20    UI: Header
+
+z-10    Terminal: LiveConsoleSearchBar
+z-10    Terminal "scroll to bottom" button
+z-20    Terminal: "connecting" overlay
+
+z-20    Terminal: LiveConsoleSaveSheet > SheetBackdrop
+z-20    Terminal: LiveConsoleSaveSheet
+--------------------------------------------
+z-40    UI: WarningBar
+z-40    UI: CustomToaster
+
+z-50    shadcn: AlertDialogOverlay
+z-50    shadcn: AlertDialogContent
+z-50    shadcn: DialogOverlay
+z-50    shadcn: DialogContent
+z-50    shadcn: DropdownMenuContent
+z-50    shadcn: SelectContent
+z-50    shadcn: SheetOverlay
+z-50    shadcn: SheetContent
+z-50    shadcn: TooltipContent - doesnt go over the terminal?!
+
+### Page Changes:
+Players:
+- list of players in a table
+- name + identifiers input
+- auto search with debouncer
+
+History:
+- list of warns/bans in a table
+- search by id OR identifier (single) with select box
+- filter by action type
+- filter by admin ("self" must be an option), and hotlink it from the admins page
+
+Whitelist:
+- maybe remove the wl pending join table
+- maybe make a "latest whitelists" showing both pending and members (query players + pending and join tables)
+- don't forget to keep the "add approval" button
+
+CFG Editor:
+- multiple cfg editors
+- add backup file to txdata, with the last 100 changes, name of the admin and timestamp
+
+Setup:
+- don't ask for server data location, list txData subfolders and let the user pick or specify
+- don't ask for cfg location, assume server.cfg and let the user change
+
+Master Actions:
+- reset fxserver - becomes server add/remove/edit
+- clean database - "bulk changes" button at the players page
+- revoke whitelists - button to whitelist pages
+
+
+=======================================================================
+
+## Next Up
+- [ ] Playerlist: implement basic tag system with filters, sorting and Fuse.js
+    - the filter dropdown is written already, check `panel/src/layout/playerlistSidebar/Playerlist.tsx`
+    - when filterString is present, disable the filter/sort drowdown, as it will show all results sorted by fuse.js
+    - might be worth to debounce the search
+
+- [ ] Anonymous admin actions (issue #893)
+    - settings with select box for which options to choose (bans, warns, dms, kicks, restarts, announcements, everything)
+
+- [ ] create new "Remove Player Data" permission which would allow to delete bans/warns, players and player identifiers
+
+- [ ] maybe use [this lib](https://www.npmjs.com/package/ntp-time-sync) to check for clock skew so I can remove the complexity of dealing with possible desync between core and ui on player modal, scheduler, etc;
+
+- [ ] write some automated tests for the auth logic and middlewares
+    - https://youtu.be/bzXtYVH4WOg
+- [ ] instead of showing cfg errors when trying to start server, just show "there are errors in your cfg file" and link the user to the cfg editor page
+- [ ] fix the eslint config
+- [ ] add fxserver version to txDiagnostics
+- [ ] slide gesture to open/close the sidebars on mobile
+- [ ] new restart schedule in status card
+
+- [ ] ask framework owners to use `txAdmin-locale`
+
+- [ ] redact discord api webhook urls from reports
+- [ ] xxxxxx
+
+
+### Linter notes
+- Maybe prettier for all files except ts/js which could be in dprint
+- Use the tailwind sorter plugin
+- When running prettier, add ignore to the imported external files
+https://prettier.io/docs/en/integrating-with-linters.html
+https://tailwindcss.com/blog/automatic-class-sorting-with-prettier
+
+
+### Improved scheduler precision
+Talvez mudar a abordagem pra ser uma array e toda vez que a distância até o primeiro item for zero, executar a ação e dar um shift nos valores?
+Exemplo:
+```js
+[
+    {time: "12:00", temp: false, skipped: false},
+    {time: "18:00", temp: false, skipped: false},
+    {time: "22:00", temp: false, skipped: false},
+]
+```
+Se a distância pro [0] for <= 0, executar restart e jogar o 12:00 pro final da array
+
+```js
+function scheduleNextExecution() {
+  const now = new Date();
+  const delay = 60 * 1000 - (now.getSeconds() * 1000 + now.getMilliseconds()) + 1000;
+
+  setTimeout(() => {
+    yourFunction(); // replace this with your function
+    scheduleNextExecution();
+  }, delay);
+}
+
+function yourFunction() {
+  console.log('Function fired at', new Date());
+}
+
+scheduleNextExecution();
+
+```
+https://www.npmjs.com/search?q=timer
+https://www.npmjs.com/search?ranking=popularity&q=scheduler
+https://www.npmjs.com/package/node-schedule
+
+
+
+
+### New UI stuff
+https://www.tremor.so/blocks/landing-zone <<< boa inspiração de componentes
+https://stacksorted.com/
+https://auto-animate.formkit.com
+
+maybe xtate for complex states like setup/deployer
+
+outro video com template completo, sem  https://youtu.be/YVI-q3idGiM
+https://immerjs.github.io/immer/ maybe?
+
+
+
+#### Theming stuff:
+https://palettte.app/
+https://uicolors.app/create
+https://www.tailwindshades.com/
+https://contrast.tools/?tab=apca
+https://atmos.style/contrast-checker
+https://realtimecolors.com/
+https://www.learnui.design/blog/color-in-ui-design-a-practical-framework.html
+https://www.refactoringui.com/previews/building-your-color-palette
+https://www.smashingmagazine.com/2021/07/hsl-colors-css/
+Base for themes: https://daisyui.com/docs/themes/
+Custom theme creator stuff:
+- https://labs.mapbox.com/react-colorpickr/
+- https://react-spectrum.adobe.com/react-spectrum/ColorSlider.html#creating-a-color-picker
+- https://www.peko-step.com/en/tool/hslrgb_en.html
+cfxui colors:
+- ext/cfx-ui/src/cfx/apps/mpMenu/styles/themes/fivem-dark.scss
+- ext/cfx-ui/src/cfx/styles/_ui.scss
+
+
+
+### Zod error parsing
+if (error instanceof z.ZodError) {
+    const outString = error.issues.map(issue => {
+        return issue.path.length
+            ? `${issue.path.join('.')}: ${issue.message}`
+            : issue.message;
+    }).join('\n');
+    console.error(outString);
+    console.error(error.issues);
+} else {
+    console.dir(error);
+}
+
+
+
+
+### Tutorial discord bot:
+- Make tutorial with excalidraw?!
+- Parts:
+    - 
+- sometimes discord just bugs out, maybe kick the bot and invite him again
+- also ctrl+r to reload discord
+- tell them not to fuck up the placeholder
+- tell them the http/https limitation
+
+
+
+
+### Server resource scanner
+ScanResourceRoot('E:/FiveM/txData/default.base/', (data: object) => {
+    console.dir(data);
+})
 
 
 =======================================================================
@@ -166,35 +415,6 @@ tar xvf fx.tar.xz
 })()
 
 
-=======================================================================
-
-
-## Optional
-- [ ] bot: fix http agent options for localAddress
-- [ ] bot: add rate limit events to diagnostics page
-- [ ] update readme with new features and contributing warning
-
-
-
-# Next up:
-- [ ] Add a tracking for % of redm/fivem/libertym servers to txTracker
-- [ ] clean a few of the dead stuff from databus
-- [ ] improve `DiscordBot.resolveMemberRoles()` cache handling
-- [ ] maybe add some debug logging to `AdminVault.checkAdminsFile()`, to find out why so many people are having issues with their logins
-    - maybe even add to the login failed page something like "admin file was reset or modified XXX time ago"
-- [ ] remove old databus.txStatsData stuff
-- [ ] QuantileArrayOutput for time stuff - use q5/q95 to help me define the buckets
-- [ ] xxxxxx
-
-
-
-### Server resource scanner
-ScanResourceRoot('C:/whatever/resources/', data => {
-    const fs = require('fs');
-    fs.writeFileSync('L:/tmp/ugh.json', JSON.stringify(data));
-})
-
-
 
 =======================================================================
 
@@ -206,35 +426,20 @@ teste:
     apertar f1 e ver se aparece a mensagem de perms
 
 # TODO: sooner than later
+- [ ] Add a tracking for % of redm/fivem/libertym servers to txTracker
+- [ ] maybe add some debug logging to `AdminVault.checkAdminsFile()`, to find out why so many people are having issues with their logins
+    - maybe even add to the login failed page something like "admin file was reset or modified XXX time ago"
+- [ ] Use q5/q95 from QuantileArrayOutput to help me define the buckets, then implement the join check time histogram
 - [ ] server logger add events/min average
 - [ ] no duplicated id type in bans? preparing for the new db migration
-- [ ] `cfg cyclical 'exec' command detected to file` should be blocking instead of warning. Behare that this is not trivial without also turning missing exec target read error also being error
+- [ ] `cfg cyclical 'exec' command detected to file` should be blocking instead of warning. Beware that this is not trivial without also turning missing exec target read error also being error
 - [ ] maybe some sort of lockfile to admins.json file which would disable admin manager?
 
 
-----------------------------------------------------
 
 
-> Experiment: other than the color, on the perf chart we could draw likes for q50, q90, q99 tick times, maybe it's easier to understand
-```json
-[
-    0.6303839732888147,
-    0.1353923205342237,
-    0.14006677796327213,
-    0.09365609348914858,
-    0.000333889816360601,
-    0.0001669449081803005,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0
-]
-```
+
+=======================================================================
 
 > Maybe do this on the ban message page template
 ```css
@@ -247,8 +452,8 @@ background-position: right 15px bottom 15px;
 //Resource didn't finish starting (if res boot still active)
 `resource "${starting.startingResName}" failed to start within the [120~600]s time limit`
 
-//Resources started, but no heartbeat whithin limit after that
-`server failed to start within time limit - 30s after last resource started`
+//Resources started, but no heartbeat within limit after that
+`server failed to start within time limit - 45s after last resource started`
 
 //No resource started starting, hb over limit
 `server failed to start within time limit - ${this.hardConfigs.heartBeat.failLimit}s, no onResourceStarting received`
@@ -261,44 +466,13 @@ background-position: right 15px bottom 15px;
 'server hang detected'
 ```
 
-----------------------------------------------------
-
-## New pages:
-Overview:
-- ???
-
-Players:
-- list of players in a table
-- name + identifiers input
-- auto search with debouncer
-
-History:
-- list of warns/bans in a table
-- search by id OR identifier (single) with select box
-- filter by action type
-- filter by admin, and hotlink it from the admins page
-
-Whitelist Page/routes:
-- show pre approvals and requests in two tables
-- Routes:
-    - get returns
-        - whitelistRequests[]
-        - whitelistApprovals[]
-    - whitelistApprovals (add/remove)
-    - whitelistRequests (approve/deny)
-
-
-
-## The Big Things before ts+react rewrite:
-- [x] in-core playerlist state tracking
-- [x] new proxy console util
-- [x] global socket.io connection for playerlist + async responses
-- [ ] new config (prepared for multiserver)
-- [ ] multiserver tx instance (backend only)
-
+=======================================================================
 
 ## New config
-- 2023 acho que os defaults deveriam existir dentro dos components
+- july 2023: consider that some vars will be used in more than one component, so making them live in one or another might not be good
+- the modules should be the ones to decide when they need to refreshConfig, so inside the module constructor maybe subscribe to change of specific variables, (in or outside of module). Maybe use event dispatchers?!
+
+- early 2023: acho que os defaults deveriam existir dentro dos components
 e sempre que outro componente precisar saber uma config, deve passar pelo componente
 - need to have a version and have migration, like the database
 
@@ -337,7 +511,6 @@ const defaults = {
 - 'convict' was the name of that one lib
 
 
-
 ### old settings refactor note:
 - save only what changed
 - make big settings a class (like TFR)
@@ -360,7 +533,6 @@ https://github.com/citizenfx/fivem/commit/84f724ed04d07e0b3a765601ad19ce54412f13
 
 Up next-ish:
 - [ ] Tooling:
-    - [ ] Inline `.deploy.config.js > copy[]` into `main-builder.js`
     - [ ] Use `dotenv` or something to read FXServer's path from
     - [ ] Adapt `main-builder.js` to accept txAdmin convars
     - [ ] Update `development.md`
@@ -463,27 +635,35 @@ march/2023 insight:
         - say "you cant run two tx on the same txdata, open <url> to visit the other one"
 
 
+### Adaptive cards system
+- Does not require the new ace system or the API
+- Resources can register their adaptive cards interface which will show in the tx nui main tab, or as a player card tab
+- The resources add a `ui_cards` definition to their `fxmanifest.lua` which is scanned by txadmin
+- When an admin clicks on the button added, it will send a event through stdin to the tx resource which will verify caller and then call the resource export with the required context (eg. player id, admin name, etc). The exported function returns an adaptive card which is sent to txAdmin through fd3.
+- This allows for resources to add their own UI to txAdmin, which supports buttons, inputs, etc
+- cfx reference: `ext/cfx-ui/src/cfx/apps/mpMenu/parts/LegacyConnectingModal/AdaptiveCardPresenter/AdaptiveCardPresenter.tsx`
 
-### New UI stuff
-tentar usar vite
-react-query usar 100%
-procurar alternativas pro react-router (wouter)
-https://auto-animate.formkit.com
-https://tanstack.com/virtual/v3
-
-For the tx ingame menu, replace actions grid with flexbox
-https://youtu.be/3elGSZSWTbM around 12:00
-outro video com template completo, sem  https://youtu.be/YVI-q3idGiM
-https://immerjs.github.io/immer/ maybe?
-
-if tailwind, check https://daisyui.com/docs/themes/
-https://ui.shadcn.com/
-https://huemint.com/website-2/
+```lua
+ui_cards 'list' {
+    ['playerInfo'] = {
+        title = 'RP Info',
+        type = 'player', --show in player card
+    },
+    ['generalStatsNui'] = {
+        title = 'RP Stats',
+        type = 'mainmenu', --show in nui main menu
+    },
+    ['generalStatsWeb'] = {
+        title = 'RP Stats',
+        type = 'web', --show in the web panel
+    },
+}
+```
 
 
 ### Update Event + Rollout strategy
 This is not compatible with the update events.
-If patch, show update notification immediately (specially important to quick-fix a bug).
+If patch, show update notification immediately (especially important to quick-fix a bug).
 If minor, randomize a delay between 0~24h.
 If patch, randomize a delay 0~72h.
 
@@ -577,6 +757,8 @@ ps.: need to also include the external events reporting thing
 
 
 ### Admin ACE sync:
+NOTE: Dec/2023 - why even bother?! Current system works, and we can exports the player permissions via state bags or whatever
+
 On server start, or admins permission change:
 - write a `txData/<profile>/txAcePerms.cfg` with:
     - remove_ace/remove_principal to wipe old permissions (would need something like `remove_ace identifier.xxx:xx txadmin.* any`)

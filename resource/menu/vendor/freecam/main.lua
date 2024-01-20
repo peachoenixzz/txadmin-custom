@@ -80,13 +80,13 @@ local keysTable = {
   {'Fwd/Back', CONTROLS.MOVE_Y},
 }
 local redmInstructionGroup, redmPromptTitle
-if IS_REDM then
-  redmPromptTitle = CreateVarString(10, 'LITERAL_STRING', 'NoClip')
-  redmInstructionGroup = makeRedmInstructionalGroup(keysTable)
-end
 
 
 function StartFreecamThread()
+  if IS_REDM then
+    redmPromptTitle = CreateVarString(10, 'LITERAL_STRING', 'NoClip')
+    redmInstructionGroup = makeRedmInstructionalGroup(keysTable)
+  end
   -- Camera/Pos updating thread
   Citizen.CreateThread(function()
     local ped = PlayerPedId()
@@ -149,7 +149,7 @@ end
 
 -- When the resource is stopped, make sure to return the camera to the player.
 AddEventHandler('onResourceStop', function (resourceName)
-  if resourceName == GetCurrentResourceName() then
+  if resourceName == "monitor" then
     SetFreecamActive(false)
   end
 end)

@@ -1,7 +1,7 @@
 const modulename = 'FXRunner';
-import { spawn } from 'child_process';
-import path from 'path';
-import { promisify } from 'util';
+import { spawn } from 'node:child_process';
+import path from 'node:path';
+import { setTimeout as sleep } from 'node:timers/promises';
 import { parseArgsStringToArgv } from 'string-argv';
 import StreamValues from 'stream-json/streamers/StreamValues';
 
@@ -17,7 +17,6 @@ const genMutex = customAlphabet(dict51, 5);
 
 
 //Helpers
-const sleep = promisify((a, f) => setTimeout(f, a));
 const now = () => { return Math.round(Date.now() / 1000); };
 const escape = (x) => { return x.toString().replace(/"/g, '\uff02'); };
 const formatCommand = (cmd, ...params) => {
@@ -34,20 +33,25 @@ const getMutableConvars = (isCmdLine = false) => {
         [`${p}set`, 'txAdmin-localeFile', globals.translator.customLocalePath ?? 'false'],
         [`${p}setr`, 'txAdmin-verbose', console.isVerbose],
         [`${p}set`, 'txAdmin-checkPlayerJoin', checkPlayerJoin],
-        [`${p}set`, 'txAdmin-menuAlignRight', globals.config.menuAlignRight],
-        [`${p}set`, 'txAdmin-menuPageKey', globals.config.menuPageKey],
-        [`${p}set`, 'txAdmin-hideDefaultAnnouncement', globals.config.hideDefaultAnnouncement],
-        [`${p}set`, 'txAdmin-hideDefaultDirectMessage', globals.config.hideDefaultDirectMessage],
-        [`${p}set`, 'txAdmin-hideDefaultWarning', globals.config.hideDefaultWarning],
-        [`${p}set`, 'txAdmin-hideDefaultScheduledRestartWarning', globals.config.hideDefaultScheduledRestartWarning],
+        [`${p}set`, 'txAdmin-menuAlignRight', globals.txAdmin.globalConfig.menuAlignRight],
+        [`${p}set`, 'txAdmin-menuPageKey', globals.txAdmin.globalConfig.menuPageKey],
+        [`${p}set`, 'txAdmin-hideDefaultAnnouncement', globals.txAdmin.globalConfig.hideDefaultAnnouncement],
+        [`${p}set`, 'txAdmin-hideDefaultDirectMessage', globals.txAdmin.globalConfig.hideDefaultDirectMessage],
+        [`${p}set`, 'txAdmin-hideDefaultWarning', globals.txAdmin.globalConfig.hideDefaultWarning],
+        [`${p}set`, 'txAdmin-hideDefaultScheduledRestartWarning', globals.txAdmin.globalConfig.hideDefaultScheduledRestartWarning],
     ];
 };
-const SHUTDOWN_NOTICE_DELAY = 5000;
 
 
 export default class FXRunner {
     constructor(txAdmin, config) {
         this.config = config;
+
+        //Checking config validity
+        if (this.config.shutdownNoticeDelay < 0 || this.config.shutdownNoticeDelay > 30) {
+            throw new Error('The fxRunner.shutdownNoticeDelay setting must be between 0 and 30 seconds.');
+        }
+
         this.spawnVariables = null;
         this.fxChild = null;
         this.restartDelayOverride = 0;
@@ -80,7 +84,7 @@ export default class FXRunner {
             return console.warn('Please open txAdmin on the browser to configure your server.');
         }
 
-        if (!globals.adminVault || !globals.adminVault.admins) {
+        if (!globals.adminVault?.hasAdmins()) {
             return console.warn('The server will not auto start because there are no admins configured.');
         }
 
@@ -108,7 +112,7 @@ export default class FXRunner {
             extraArgs,
             '+set', 'onesync', this.config.onesync,
             '+sets', 'txAdmin-version', txEnv.txAdminVersion,
-            '+setr', 'txAdmin-menuEnabled', globals.config.menuEnabled,
+            '+setr', 'txAdmin-menuEnabled', globals.txAdmin.globalConfig.menuEnabled,
             '+set', 'txAdmin-luaComHost', txAdminInterface,
             '+set', 'txAdmin-luaComToken', globals.webServer.luaComToken,
             '+set', 'txAdminServerMode', 'true', //Can't change this one due to fxserver code compatibility
@@ -201,13 +205,20 @@ export default class FXRunner {
         //Reseting monitor stats
         globals.healthMonitor.resetMonitorStats();
 
+        //Resetting frontend playerlist
+        globals.webServer.webSocket.buffer('playerlist', {
+            mutex: this.currentMutex,
+            type: 'fullPlayerlist',
+            playerlist: [],
+        });
+
         //Announcing
         if (announce === 'true' || announce === true) {
             globals.discordBot.sendAnnouncement({
                 type: 'success',
                 description: {
                     key: 'server_actions.spawning_discord',
-                    data: { servername: globals.config.serverName }
+                    data: { servername: globals.txAdmin.globalConfig.serverName }
                 }
             });
         }
@@ -244,7 +255,7 @@ export default class FXRunner {
         } catch (error) {
             console.error('Failed to start FXServer with the following error:');
             console.dir(error);
-            process.exit(0);
+            process.exit(5400);
         }
 
         //Setting up stream handlers
@@ -292,8 +303,8 @@ export default class FXRunner {
 
         const tracePipe = this.fxChild.stdio[3].pipe(StreamValues.withParser());
         tracePipe.on('error', (data) => {
-            console.verbose.warn(`FD3 decode error: ${data.message}`);
-            globals.databus.txStatsData.lastFD3Error = data.message;
+            //NOTE: this should be verbose warn, but since i've never seen it happen, let's see if someone reports it.
+            console.error(`FD3 decode error: ${data.message}`);
         });
         tracePipe.on('data', this.outputHandler.trace.bind(this.outputHandler, this.currentMutex));
 
@@ -343,7 +354,7 @@ export default class FXRunner {
         try {
             //Prevent concurrent restart request
             const msTimestamp = Date.now();
-            if (msTimestamp - this.lastKillRequest < SHUTDOWN_NOTICE_DELAY) {
+            if (msTimestamp - this.lastKillRequest < this.config.shutdownNoticeDelay * 1000) {
                 return 'Restart already in progress.';
             } else {
                 this.lastKillRequest = msTimestamp;
@@ -353,11 +364,11 @@ export default class FXRunner {
             const messageType = isRestarting ? 'restarting' : 'stopping';
             const messageColor = isRestarting ? 'warning' : 'danger';
             const tOptions = {
-                servername: globals.config.serverName,
+                servername: globals.txAdmin.globalConfig.serverName,
                 reason: reason ?? 'no reason provided',
             };
             this.sendEvent('serverShuttingDown', {
-                delay: SHUTDOWN_NOTICE_DELAY,
+                delay: this.config.shutdownNoticeDelay * 1000,
                 author: author ?? 'txAdmin',
                 message: globals.translator.t(`server_actions.${messageType}`, tOptions),
             });
@@ -370,7 +381,8 @@ export default class FXRunner {
             });
 
             //Awaiting restart delay
-            await sleep(SHUTDOWN_NOTICE_DELAY);
+            //The 250 is so at least everyone is kicked from the server
+            await sleep(250 + this.config.shutdownNoticeDelay * 1000);
 
             //Stopping server
             if (this.fxChild !== null) {
@@ -428,7 +440,7 @@ export default class FXRunner {
                 eventType,
                 JSON.stringify(data),
             );
-            console.verbose.dir({ eventType, data});
+            // console.verbose.dir({ eventType, data});
             return this.srvCmd(eventCommand);
         } catch (error) {
             console.verbose.error(`Error writing firing server event ${eventType}`);
@@ -444,13 +456,13 @@ export default class FXRunner {
      * TODO: make this method accept an array and apply the formatCommand() logic
      * @param {string} command
      */
-    srvCmd(command) {
+    srvCmd(command, src = 'TXADMIN') {
         if (typeof command !== 'string') throw new Error('Expected String!');
         if (this.fxChild === null) return false;
         const sanitized = command.replaceAll(/\n/g, ' ');
         try {
             const success = this.fxChild.stdin.write(sanitized + '\n');
-            globals.logger.fxserver.writeMarker('command', sanitized);
+            globals.logger.fxserver.writeMarker('command', sanitized, src);
             return success;
         } catch (error) {
             console.verbose.error('Error writing to fxChild.stdin');
@@ -463,37 +475,12 @@ export default class FXRunner {
     //================================================================
     /**
      * Handles a live console command input
-     * @param {object} session
+     * @param {import('../WebServer/authLogic').AuthedAdminType} admin
      * @param {string} command
      */
-    liveConsoleCmdHandler(session, command) {
-        globals.logger.admin.write(session.auth.username, command, 'command');
-        globals.fxRunner.srvCmd(command);
-    }
-
-
-    //================================================================
-    /**
-     * Pipe a string into FXServer's stdin (aka executes a cfx's command) and returns the stdout output.
-     * NOTE: used only in webroutes\fxserver\commands.js and webroutes\player\actions.js
-     * FIXME: deprecate this with a promise that resolves or rejects.
-     * we can create a promise with settimeout to reject, and create a function that resolves it
-     * and set this function in a map with the cmd id, and the resolve function as value
-     * the internal functions should fd3 {id, message?} and outputhandler do Map.get(id)(message)
-     * @param {*} command
-     * @param {*} bufferTime the size of the buffer in milliseconds
-     * @returns {string} buffer
-     */
-    async srvCmdBuffer(command, bufferTime = 1500) {
-        if (typeof command !== 'string') throw new Error('Expected String!');
-        if (this.fxChild === null) return false;
-        this.outputHandler.cmdBuffer = '';
-        this.outputHandler.enableCmdBuffer = true;
-        const result = this.srvCmd(command);
-        if (!result) return false;
-        await sleep(bufferTime);
-        this.outputHandler.enableCmdBuffer = false;
-        return this.outputHandler.cmdBuffer.replace(/\x1b\[\d+(;\d)?m/g, '');
+    liveConsoleCmdHandler(admin, command) {
+        admin.logCommand(command, 'command');
+        globals.fxRunner.srvCmd(command, admin.name);
     }
 
 

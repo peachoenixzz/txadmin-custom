@@ -5,7 +5,7 @@ import path from 'node:path';
 import chalk, { ChalkInstance } from 'chalk';
 import slash from 'slash';
 import ErrorStackParser from 'error-stack-parser';
-import sourceMapSupport from 'source-map-support'
+import sourceMapSupport from 'source-map-support';
 
 
 //Buffer handler
@@ -241,6 +241,16 @@ const consoleFactory = (ctx?: string, subCtx?: string) => {
                 defaultConsole.log(prefix, line);
             }
         },
+        majorMultilineError: (text: string | string[]) => {
+            if (!Array.isArray(text)) text = text.split('\n');
+            const prefix = genLogPrefix(currContext, chalk.bgRed);
+            const sep = '='.repeat(60);
+            defaultConsole.log(prefix, sep);
+            for (const line of text) {
+                defaultConsole.log(prefix, line);
+            }
+            defaultConsole.log(prefix, sep);
+        },
 
         verbose: {
             debug: getLogFunc(currContext, chalk.bgMagenta, verboseConsole),
@@ -256,6 +266,11 @@ const consoleFactory = (ctx?: string, subCtx?: string) => {
 };
 export default consoleFactory;
 
+
+/**
+ * Replaces the global console with the new one
+ */
+global.console = consoleFactory('Global');
 
 
 /**

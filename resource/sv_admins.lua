@@ -28,6 +28,10 @@ local function handleAuthFail(src, reason)
     reason = reason or "unknown"
     debugPrint("Auth rejected #"..srcString.." ("..reason..")")
     TriggerClientEvent('txcl:setAdmin', src, false, false, reason)
+    TriggerEvent('txAdmin:events:adminAuth', {
+        netid = src,
+        isAdmin = false,
+    })
 end
 
 -- Handle menu auth requests
@@ -42,29 +46,32 @@ RegisterNetEvent('txsv:checkIfAdmin', function()
     end
 
     -- Prepping http request
-    local url = "http://"..TX_LUACOMHOST.."/nui/auth"
+    local url = "http://"..TX_LUACOMHOST.."/auth/self"
     local headers = {
         ['Content-Type'] = 'application/json',
         ['X-TxAdmin-Token'] = TX_LUACOMTOKEN,
-        ['X-TxAdmin-Identifiers'] = table.concat(GetPlayerIdentifiers(src), ', ')
+        ['X-TxAdmin-Identifiers'] = table.concat(GetPlayerIdentifiers(src), ',')
     }
 
     -- Making http request
     PerformHttpRequest(url, function(httpCode, data, resultHeaders)
         -- Validating response
         local resp = json.decode(data)
-        if not resp or type(resp.isAdmin) ~= "boolean" then
+        if not resp then
             return handleAuthFail(src, "invalid response")
         end
-        if not resp.isAdmin then
-            return handleAuthFail(src, resp.reason)
+        if resp.logout ~= nil and resp.logout then
+            return handleAuthFail(src, resp.reason or 'unknown reject reason')
+        end
+        if type(resp.name) ~= "string" then
+            return handleAuthFail(src, "invalid response")
         end
         if type(resp.permissions) ~= 'table' then
             resp.permissions = {}
         end
 
         -- Setting up admin
-        local adminTag = "[#"..src.."] "..resp.username
+        local adminTag = "[#"..src.."] "..resp.name
         debugPrint(("^2Authenticated admin ^5%s^2 with permissions: %s"):format(
             src,
             adminTag,
@@ -72,12 +79,17 @@ RegisterNetEvent('txsv:checkIfAdmin', function()
         ))
         TX_ADMINS[srcString] = {
             tag = adminTag,
-            username = resp.username,
+            username = resp.name,
             perms = resp.permissions,
             bucket = 0
         }
         sendInitialPlayerlist(src)
-        TriggerClientEvent('txcl:setAdmin', src, resp.username, resp.permissions)
+        TriggerClientEvent('txcl:setAdmin', src, resp.name, resp.permissions)
+        TriggerEvent('txAdmin:events:adminAuth', {
+            netid = src,
+            isAdmin = true,
+            username = resp.name,
+        })
     end, 'GET', '', headers)
 end)
 
@@ -110,4 +122,10 @@ AddEventHandler('txAdmin:events:adminsUpdated', function(onlineAdminIDs)
     for id, _ in pairs(refreshAdminIds) do
         TriggerClientEvent('txcl:reAuth', tonumber(id))
     end
+
+    -- Broadcasting the invalidation of all admins
+    TriggerEvent('txAdmin:events:adminAuth', {
+        netid = -1,
+        isAdmin = false,
+    })
 end)

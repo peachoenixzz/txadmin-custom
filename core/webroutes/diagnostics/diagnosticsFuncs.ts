@@ -5,14 +5,10 @@ import got from '@core/extras/got.js';
 import getOsDistro from '@core/extras/getOsDistro.js';
 import pidUsageTree from '@core/extras/pidUsageTree.js';
 import { txEnv } from '@core/globalData';
-import FXRunner from '@core/components/FxRunner';
-import HealthMonitor from '@core/components/HealthMonitor';
-import WebServer from '@core/components/WebServer';
-import Logger from '@core/components/Logger';
 import si from 'systeminformation';
 import consoleFactory from '@extras/console';
-import StatisticsManager from '@core/components/StatisticsManager';
 import { QuantileArrayOutput } from '@core/components/StatisticsManager/statsUtils';
+import TxAdmin from '@core/txAdmin';
 const console = consoleFactory(modulename);
 
 
@@ -45,11 +41,6 @@ type HostDataReturnType = {
     dynamic?: HostDynamicDataType
 } | { error: string };
 let hostStaticDataCache: HostStaticDataType;
-
-//Pre-calculate static data
-setTimeout(() => {
-    getHostData().catch();
-}, 10_000);
 
 
 /**
@@ -115,20 +106,19 @@ export const getProcessesData = async () => {
 /**
  * Gets the FXServer Data.
  */
-export const getFXServerData = async () => {
-    const fxRunner = (globals.fxRunner as FXRunner);
-    const healthMonitor = (globals.healthMonitor as HealthMonitor);
-
+export const getFXServerData = async (txAdmin: TxAdmin) => {
     //Sanity Check
-    if (fxRunner.fxChild === null || fxRunner.fxServerHost === null) {
+    if (txAdmin.fxRunner.fxChild === null || txAdmin.fxRunner.fxServerHost === null) {
         return { error: 'Server Offline' };
     }
 
     //Preparing request
     const requestOptions = {
-        url: `http://${fxRunner.fxServerHost}/info.json`,
+        url: `http://${txAdmin.fxRunner.fxServerHost}/info.json`,
         maxRedirects: 0,
-        timeout: healthMonitor.hardConfigs.timeout,
+        timeout: {
+            request: txAdmin.healthMonitor.hardConfigs.timeout
+        },
         retry: { limit: 0 },
     };
 
@@ -178,20 +168,29 @@ export const getFXServerData = async () => {
 /**
  * Gets the Host Data.
  */
-export const getHostData = async (): Promise<HostDataReturnType> => {
-    const healthMonitor = (globals.healthMonitor as HealthMonitor);
+export const getHostData = async (txAdmin: TxAdmin): Promise<HostDataReturnType> => {
+    const tmpDurationDebugLog = (msg: string) => {
+        // @ts-expect-error
+        if(globals?.tmpSetHbDataTracking){
+            console.verbose.debug(`refreshHbData: ${msg}`);
+        }
+    }
 
     //Get and cache static information
+    tmpDurationDebugLog('started');
     if (!hostStaticDataCache) {
+        tmpDurationDebugLog('filling host static data cache');
         //This errors out on pterodactyl egg
         let osUsername = 'unknown';
         try {
             const userInfo = os.userInfo();
+            tmpDurationDebugLog('got userInfo');
             osUsername = userInfo.username;
         } catch (error) {}
 
         try {
             const cpuStats = await si.cpu();
+            tmpDurationDebugLog('got cpu');
             const cpuSpeed = cpuStats.speedMin || cpuStats.speed;
 
             //TODO: move this to frontend
@@ -218,6 +217,7 @@ export const getHostData = async (): Promise<HostDataReturnType> => {
                     clockWarning,
                 }
             }
+            tmpDurationDebugLog('finished');
         } catch (error) {
             console.error('Error getting Host static data.');
             console.verbose.dir(error);
@@ -227,7 +227,7 @@ export const getHostData = async (): Promise<HostDataReturnType> => {
 
     //Get dynamic info (mem/cpu usage) and prepare output
     try {
-        const stats = healthMonitor.hostStats;
+        const stats = txAdmin.healthMonitor.hostStats;
         if (stats) {
             return {
                 static: hostStaticDataCache,
@@ -267,13 +267,7 @@ export const getHostStaticData = (): HostStaticDataType => {
 /**
  * Gets txAdmin Data
  */
-export const getTxAdminData = async () => {
-    const fxRunner = (globals.fxRunner as FXRunner);
-    const webServer = (globals.webServer as WebServer);
-    const logger = (globals.logger as Logger);
-    const statisticsManager = (globals.statisticsManager as StatisticsManager);
-    const databus = (globals.databus as any);
-
+export const getTxAdminData = async (txAdmin: TxAdmin) => {
     const humanizeOptions: HumanizerOptions = {
         round: true,
         units: ['d', 'h', 'm'],
@@ -291,38 +285,32 @@ export const getTxAdminData = async () => {
         }
         return output;
     }
-    const banCheckTime = joinTimesToString(statisticsManager.banCheckTime.result());
-    const whitelistCheckTime = joinTimesToString(statisticsManager.whitelistCheckTime.result());
+    const banCheckTime = joinTimesToString(txAdmin.statisticsManager.banCheckTime.result());
+    const whitelistCheckTime = joinTimesToString(txAdmin.statisticsManager.whitelistCheckTime.result());
 
-    const httpCounter = databus.txStatsData.httpCounter;
     return {
         //Stats
         uptime: humanizeDuration(process.uptime() * 1000, humanizeOptions),
-        httpCounterLog: httpCounter.log.join(', ') || '--',
-        httpCounterMax: httpCounter.max || '--',
         monitorRestarts: {
-            close: databus.txStatsData.monitorStats.restartReasons.close,
-            heartBeat: databus.txStatsData.monitorStats.restartReasons.heartBeat,
-            healthCheck: databus.txStatsData.monitorStats.restartReasons.healthCheck,
+            close: txAdmin.statisticsManager.monitorStats.restartReasons.close,
+            heartBeat: txAdmin.statisticsManager.monitorStats.restartReasons.heartBeat,
+            healthCheck: txAdmin.statisticsManager.monitorStats.restartReasons.healthCheck,
         },
-        hbFD3Fails: databus.txStatsData.monitorStats.heartBeatStats.fd3Failed,
-        hbHTTPFails: databus.txStatsData.monitorStats.heartBeatStats.httpFailed,
-        hbBootSeconds: databus.txStatsData.monitorStats.bootSeconds.join(', ') || '--',
-        freezeSeconds: databus.txStatsData.monitorStats.freezeSeconds.join(', ') || '--',
-        koaSessions: Object.keys(webServer.koaSessionMemoryStore.sessions).length || '--',
+        hbFD3Fails: txAdmin.statisticsManager.monitorStats.healthIssues.fd3,
+        hbHTTPFails: txAdmin.statisticsManager.monitorStats.healthIssues.http,
         banCheckTime,
         whitelistCheckTime,
 
         //Log stuff:
-        logStorageSize: (await logger.getStorageSize()).total,
-        loggerStatusAdmin: logger.admin.getUsageStats(),
-        loggerStatusFXServer: logger.fxserver.getUsageStats(),
-        loggerStatusServer: logger.server.getUsageStats(),
+        logStorageSize: (await txAdmin.logger.getStorageSize()).total,
+        loggerStatusAdmin: txAdmin.logger.admin.getUsageStats(),
+        loggerStatusFXServer: txAdmin.logger.fxserver.getUsageStats(),
+        loggerStatusServer: txAdmin.logger.server.getUsageStats(),
 
         //Env stuff
         fxServerPath: txEnv.fxServerPath,
-        fxServerHost: (fxRunner.fxServerHost)
-            ? fxRunner.fxServerHost
+        fxServerHost: (txAdmin.fxRunner.fxServerHost)
+            ? txAdmin.fxRunner.fxServerHost
             : '--',
     };
 }

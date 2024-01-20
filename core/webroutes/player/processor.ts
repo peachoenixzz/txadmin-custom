@@ -6,8 +6,6 @@ const xss = xssInstancer();
 
 /**
  * Processes an action list and returns a templatization array.
- * @param {array} list
- * @returns {array} array of actions, or throws on error
  */
 export const processActionList = (list: DatabaseActionType[]) => {
     if (!list) return [];
@@ -40,15 +38,14 @@ export const processActionList = (list: DatabaseActionType[]) => {
             out.message = `${xss(log.author)} WARNED ${actReference}`;
         } else {
             out.color = 'secondary';
-            out.message = `${xss(log.author)} ${log.type.toUpperCase()} ${actReference}`;
+            out.message = `${xss(log.author)} ${(log.type as any)?.toUpperCase()} ${actReference}`;
         }
         if (log.revocation.timestamp) {
             out.color = 'dark';
             out.isRevoked = true;
             const revocationDate = (new Date(log.revocation.timestamp * 1000)).toLocaleString();
             out.footerNote = `Revoked by ${log.revocation.author} on ${revocationDate}.`;
-        }
-        if (typeof log.expiration == 'number') {
+        }else if (typeof log.expiration == 'number') {
             const expirationDate = (new Date(log.expiration * 1000)).toLocaleString();
             out.footerNote = (log.expiration < tsNow) ? `Expired at ${expirationDate}.` : `Expires at ${expirationDate}.`;
         }
@@ -59,18 +56,9 @@ export const processActionList = (list: DatabaseActionType[]) => {
 
 /**
  * Processes an player list and returns a templatization array.
- * @param {array} list
- * @returns {array} array of players, or throws on error
  */
-export const processPlayerList = (list: DatabasePlayerType[]) => {
-    //Typescript stuff
-    const playerlistManager = (globals.playerlistManager as PlayerlistManager);
-
+export const processPlayerList = (list: DatabasePlayerType[], activeLicenses: string[]) => {
     if (!list) return [];
-
-    const activeLicenses = playerlistManager.getPlayerList()
-        .map((p) => p.license)
-        .filter(l => l);
     return list.map((p) => {
         return {
             name: p.displayName,

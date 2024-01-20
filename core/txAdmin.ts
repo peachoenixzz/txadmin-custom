@@ -6,7 +6,6 @@ import { txEnv } from '@core/globalData';
 
 import { printBanner } from '@core/extras/banner';
 import setupProfile from '@core/extras/setupProfile';
-import updateChecker from '@core/extras/updateChecker';
 
 import AdminVault from '@core/components/AdminVault';
 import ConfigVault from '@core/components/ConfigVault';
@@ -24,8 +23,10 @@ import ResourcesManager from '@core/components/ResourcesManager';
 import PlayerlistManager from '@core/components/PlayerlistManager';
 import PlayerDatabase from '@core/components/PlayerDatabase';
 import PersistentCache from '@core/components/PersistentCache';
+import UpdateChecker from '@core/components/UpdateChecker';
 
 import consoleFactory from '@extras/console';
+import { getHostData } from './webroutes/diagnostics/diagnosticsFuncs';
 const console = consoleFactory(`v${txEnv.txAdminVersion}`);
 
 
@@ -52,65 +53,13 @@ const globalsInternal: Record<string, any> = {
     resourcesManager: null,
     playerlistManager: null,
     playerDatabase: null,
-    config: null,
     deployer: null,
+    updateChecker: null,
     info: {},
 
     //FIXME: settings:save webroute cannot call txAdmin.refreshConfig for now
     //so this hack allows it to call it
-    func_txAdminRefreshConfig: ()=>{},
-
-    //NOTE: still not ideal, but since the extensions system changed entirely,
-    //      will have to rethink the plans for this variable.
-    databus: {
-        //internal
-        resourcesList: null,
-        updateChecker: null,
-        joinCheckHistory: [],
-
-        //stats
-        txStatsData: {
-            playerDBStats: null,
-            lastFD3Error: '',
-            monitorStats: {
-                heartBeatStats: {
-                    httpFailed: 0,
-                    fd3Failed: 0,
-                },
-                restartReasons: {
-                    close: 0,
-                    heartBeat: 0,
-                    healthCheck: 0,
-                },
-                bootSeconds: [],
-                freezeSeconds: [],
-            },
-            randIDFailures: 0,
-            pageViews: {},
-            httpCounter: {
-                current: 0,
-                max: 0,
-                log: [],
-            },
-            login: {
-                origins: {
-                    localhost: 0,
-                    cfxre: 0,
-                    ip: 0,
-                    other: 0,
-                    webpipe: 0,
-                },
-                methods: {
-                    discord: 0,
-                    citizenfx: 0,
-                    password: 0,
-                    zap: 0,
-                    nui: 0,
-                    iframe: 0,
-                },
-            },
-        },
-    },
+    func_txAdminRefreshConfig: () => { },
 };
 
 //@ts-ignore: yes i know this is wrong
@@ -137,6 +86,7 @@ export default class TxAdmin {
     playerlistManager;
     playerDatabase;
     persistentCache;
+    updateChecker;
 
     //Runtime
     readonly info: {
@@ -155,7 +105,7 @@ export default class TxAdmin {
         hideDefaultWarning: boolean,
         hideDefaultScheduledRestartWarning: boolean,
     }
-    
+
 
     constructor(serverProfile: string) {
         console.log(`Profile '${serverProfile}' starting...`);
@@ -170,7 +120,7 @@ export default class TxAdmin {
                 setupProfile(txEnv.osType, txEnv.fxServerPath, txEnv.fxServerVersion, serverProfile, profilePath);
             } catch (error) {
                 console.error(`Failed to create profile '${serverProfile}' with error: ${(error as Error).message}`);
-                process.exit();
+                process.exit(300);
             }
         }
         this.info = {
@@ -186,14 +136,13 @@ export default class TxAdmin {
             globalsInternal.configVault = this.configVault;
             profileConfig = globalsInternal.configVault.getAll();
             this.globalConfig = profileConfig.global;
-            globalsInternal.config = this.globalConfig;
 
             //FIXME: hacky fix for settings:save to be able to update this
             globalsInternal.func_txAdminRefreshConfig = this.refreshConfig.bind(this);
         } catch (error) {
             console.error(`Error starting ConfigVault:`);
             console.dir(error);
-            process.exit(1);
+            process.exit(301);
         }
 
         //Start all modules
@@ -213,7 +162,7 @@ export default class TxAdmin {
             this.logger = new Logger(profileConfig.logger);
             globalsInternal.logger = this.logger;
 
-            this.translator = new Translator();
+            this.translator = new Translator(this);
             globalsInternal.translator = this.translator;
 
             this.fxRunner = new FxRunner(this, profileConfig.fxRunner);
@@ -248,10 +197,13 @@ export default class TxAdmin {
 
             this.persistentCache = new PersistentCache(this);
             globalsInternal.persistentCache = this.persistentCache;
+
+            this.updateChecker = new UpdateChecker(this);
+            globalsInternal.updateChecker = this.updateChecker;
         } catch (error) {
             console.error(`Error starting main components:`);
             console.dir(error);
-            process.exit(1);
+            process.exit(302);
         }
 
         //Once they all finish loading, the function below will print the banner
@@ -261,11 +213,10 @@ export default class TxAdmin {
             console.dir(error);
         }
 
-        //Run Update Checker every 15 minutes
-        updateChecker();
-        setInterval(updateChecker, 15 * 60 * 1000);
-
-        //TODO: cron to update setTTYTitle
+        //Pre-calculate static data
+        setTimeout(() => {
+            getHostData(this).catch((e) => { });
+        }, 10_000);
     }
 
     /**
@@ -273,6 +224,5 @@ export default class TxAdmin {
      */
     refreshConfig() {
         this.globalConfig = this.configVault.getScoped('global');
-        globalsInternal.config = this.globalConfig;
     }
 };

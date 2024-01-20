@@ -1,5 +1,5 @@
 const modulename = 'Deployer';
-import path from 'path';
+import path from 'node:path';
 import { cloneDeep }  from 'lodash-es';
 import dateFormat from 'dateformat'
 import fse from 'fs-extra';
@@ -94,7 +94,6 @@ export const parseValidateRecipe = (rawRecipe) => {
     const outRecipe = {
         raw: rawRecipe.trim(),
         name: toDefault(recipe.name, 'unnamed').trim(),
-        version: toDefault(recipe.version, '').trim(),
         author: toDefault(recipe.author, 'unknown').trim(),
         description: toDefault(recipe.description, '').trim(),
         variables: {},
@@ -162,7 +161,7 @@ export class Deployer {
         this.originalRecipe = originalRecipe;
         this.deploymentID = deploymentID;
         this.progress = 0;
-        this.serverName = customMetaData.serverName || globals.config.serverName || '';
+        this.serverName = customMetaData.serverName || globals.txAdmin.globalConfig.serverName || '';
         this.logLines = [];
 
         //Load recipe
@@ -260,7 +259,6 @@ export class Deployer {
         contextVariables.serverName = this.serverName;
         contextVariables.recipeName = this.recipe.name;
         contextVariables.recipeAuthor = this.recipe.author;
-        contextVariables.recipeVersion = this.recipe.version;
         contextVariables.recipeDescription = this.recipe.description;
 
         //Run all the tasks

@@ -70,7 +70,7 @@ RegisterNetEvent('txcl:showWarning', function(author, reason)
         while true do
             Wait(100)
             if IsControlPressed(dismissKeyGroup, dismissKey) then
-                count = count +1
+                count = count + 1
                 if count >= countLimit then
                     sendMenuMessage('closeWarning')
                     return
@@ -93,40 +93,103 @@ end)
 -- The suggestion is added after 500ms, so we need to wait more
 CreateThread(function()
     Wait(1000)
-    --Commands
-    TriggerEvent('chat:removeSuggestion', '/txadmin') --too spammy
-    TriggerEvent('chat:removeSuggestion', '/txaPing')
-    TriggerEvent('chat:removeSuggestion', '/txaKickAll')
-    TriggerEvent('chat:removeSuggestion', '/txaEvent')
-    TriggerEvent('chat:removeSuggestion', '/txaReportResources')
-    TriggerEvent('chat:removeSuggestion', '/txaSetDebugMode')
+    local suggestionsToRemove = {
+        --Commands
+        '/txadmin',
+        '/txaPing',
+        '/txaKickAll',
+        '/txaEvent',
+        '/txaReportResources',
+        '/txaSetDebugMode',
 
-    --Keybinds
-    TriggerEvent('chat:removeSuggestion', '/txAdmin:menu:noClipToggle')
-    TriggerEvent('chat:removeSuggestion', '/txAdmin:menu:openPlayersPage')
-    TriggerEvent('chat:removeSuggestion', '/txAdmin:menu:togglePlayerIDs')
+        --Keybinds
+        '/txAdmin:menu:noClipToggle',
+        '/txAdmin:menu:openPlayersPage',
+        '/txAdmin:menu:togglePlayerIDs',
 
-    --Convars
-    TriggerEvent('chat:removeSuggestion', '/txAdmin-version')
-    TriggerEvent('chat:removeSuggestion', '/txAdmin-locale')
-    TriggerEvent('chat:removeSuggestion', '/txAdmin-localeFile')
-    TriggerEvent('chat:removeSuggestion', '/txAdmin-verbose')
-    TriggerEvent('chat:removeSuggestion', '/txAdmin-luaComHost')
-    TriggerEvent('chat:removeSuggestion', '/txAdmin-luaComToken')
-    TriggerEvent('chat:removeSuggestion', '/txAdmin-checkPlayerJoin')
-    TriggerEvent('chat:removeSuggestion', '/txAdmin-pipeToken')
-    TriggerEvent('chat:removeSuggestion', '/txAdmin-debugMode')
-    TriggerEvent('chat:removeSuggestion', '/txAdmin-hideDefaultAnnouncement')
-    TriggerEvent('chat:removeSuggestion', '/txAdmin-hideDefaultDirectMessage')
-    TriggerEvent('chat:removeSuggestion', '/txAdmin-hideDefaultWarning')
-    TriggerEvent('chat:removeSuggestion', '/txAdmin-hideDefaultScheduledRestartWarning')
-    TriggerEvent('chat:removeSuggestion', '/txAdminServerMode')
+        --Convars
+        '/txAdmin-version',
+        '/txAdmin-locale',
+        '/txAdmin-localeFile',
+        '/txAdmin-verbose',
+        '/txAdmin-luaComHost',
+        '/txAdmin-luaComToken',
+        '/txAdmin-checkPlayerJoin',
+        '/txAdmin-pipeToken',
+        '/txAdmin-debugMode',
+        '/txAdmin-hideDefaultAnnouncement',
+        '/txAdmin-hideDefaultDirectMessage',
+        '/txAdmin-hideDefaultWarning',
+        '/txAdmin-hideDefaultScheduledRestartWarning',
+        '/txAdminServerMode',
 
-    --Menu convars
-    TriggerEvent('chat:removeSuggestion', '/txAdmin-menuEnabled')
-    TriggerEvent('chat:removeSuggestion', '/txAdmin-menuAlignRight')
-    TriggerEvent('chat:removeSuggestion', '/txAdmin-menuPageKey')
-    TriggerEvent('chat:removeSuggestion', '/txAdmin-playerIdDistance')
-    TriggerEvent('chat:removeSuggestion', '/txAdmin-menuDrunkDuration')
+        --Menu convars
+        '/txAdmin-menuEnabled',
+        '/txAdmin-menuAlignRight',
+        '/txAdmin-menuPageKey',
+        '/txAdmin-menuPlayerIdDistance',
+        '/txAdmin-menuDrunkDuration'
+    }
+
+    for _, suggestion in ipairs(suggestionsToRemove) do
+        TriggerEvent('chat:removeSuggestion', suggestion)
+    end
 end)
 
+
+-- =============================================
+--  Helper to protect the NUI callbacks from CSRF attacks
+--  NOTE: This is a temporary fix for the NUI callback Origin issue
+-- =============================================
+--- Check if a NUI callback is from the correct Origin
+--- technically no request should come from nui://monitor, since the manifest version is cerulean
+---@param headers table
+---@return boolean
+function IsNuiRequestOriginValid(headers)
+    if type(headers) ~= 'table' then
+        return false --no clue
+    end
+    if headers['Origin'] == nil then
+        return true --probably legacy page
+    end
+    if type(headers['Origin']) ~= 'string' or headers['Origin'] == '' then
+        return false --no clue
+    end
+
+    if headers['Origin'] == 'https://cfx-nui-monitor' then
+        return true --probably self
+    end
+    if headers['Origin'] == 'https://monitor' then
+        return true --probably legacy iframe inside web iframe
+    end
+
+    -- warn admin of possible csrf attempt
+    if menuIsAccessible and sendPersistentAlert then
+        local msg = ('ATTENTION! txAdmin received a NUI message from the origin "%s" which is not approved. This likely means that that resource is vulnerable to XSS which has been exploited to inject txAdmin commands. It is recommended that you fix the vulnerability or remove that resource completely. For more information: discord.gg/txAdmin.')            :format(headers['Origin'])
+        sendPersistentAlert('csrfWarning', 'error', msg, false)
+    end
+
+    return false
+end
+
+--- Wrapper for RegisterRawNuiCallback which mimics the behavior of RegisterNUICallback
+--- but checks the origin of the request to prevent CSRF attacks
+function RegisterSecureNuiCallback(callbackName, funcCallback)
+    RegisterRawNuiCallback(callbackName, function(req, nuiCallback)
+        if not IsNuiRequestOriginValid(req.headers) then
+            debugPrint(("^1Invalid NUI callback origin for %s"):format(callbackName))
+            return nuiCallback({
+                status = 403,
+                body = '{}',
+            })
+        end
+
+        -- calls the function
+        funcCallback(json.decode(req.body), function(data)
+            nuiCallback({
+                status = 200,
+                body = type(data) == 'table' and json.encode(data) or '{}',
+            })
+        end)
+    end)
+end

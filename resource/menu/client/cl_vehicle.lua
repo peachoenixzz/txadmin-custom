@@ -92,7 +92,7 @@ end
 
 local gameSpawnReqHandler = IS_FIVEM and handleSpawnRequestFivem or handleSpawnRequestRedm
 
-RegisterNUICallback('spawnVehicle', function(data, cb)
+RegisterSecureNuiCallback('spawnVehicle', function(data, cb)
     if type(data) ~= 'table' or type(data.model) ~= 'string' then
         error("Invalid spawnVehicle NUI callback data")
     end
@@ -105,7 +105,7 @@ RegisterNUICallback('spawnVehicle', function(data, cb)
     cb(spawnReqDone and {} or { e = true })
 end)
 
-RegisterNUICallback("deleteVehicle", function(data, cb)
+RegisterSecureNuiCallback("deleteVehicle", function(data, cb)
     local ped = PlayerPedId()
     local veh = GetVehiclePedIsIn(ped, false)
     if IS_REDM and IsPedOnMount(ped) then
@@ -121,7 +121,7 @@ RegisterNUICallback("deleteVehicle", function(data, cb)
 end)
 
 
-RegisterNUICallback('fixVehicle', function(_, cb)
+RegisterSecureNuiCallback('fixVehicle', function(_, cb)
     local ped = PlayerPedId()
     local veh = GetVehiclePedIsIn(ped, false)
     if (veh == 0) and not IsPedOnMount(ped) then
@@ -133,7 +133,7 @@ RegisterNUICallback('fixVehicle', function(_, cb)
 end)
 
 
-RegisterNUICallback('boostVehicle', function(_, cb)
+RegisterSecureNuiCallback('boostVehicle', function(_, cb)
     local ped = PlayerPedId()
     local veh = GetVehiclePedIsIn(ped, false)
     if IS_REDM and IsPedOnMount(ped) then
@@ -225,7 +225,6 @@ local function boostVehicleFivem()
     setVehicleHandlingValue(veh, 'fRollCentreHeightRear', 0.5); --testar, o certo é 0~1
 
     playLibrarySound('confirm')
-    SetVehicleNumberPlateText(veh, "TX B00ST")
     SetVehicleCanBreak(veh, false) -- If this is set to false, the vehicle simply can't break
     SetVehicleEngineCanDegrade(veh, false) -- Engine strong
     SetVehicleMod(veh, 15, 3, false) -- Max Suspension

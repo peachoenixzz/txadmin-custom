@@ -1,7 +1,7 @@
 const modulename = 'PersistentCache';
 import fsp from 'node:fs/promises';
 import TxAdmin from '@core/txAdmin';
-import throttle from 'lodash/throttle.js';
+import throttle from 'lodash-es/throttle.js';
 import consoleFactory from '@extras/console';
 const console = consoleFactory(modulename);
 
@@ -107,8 +107,8 @@ export default class PersistentCache {
                 this.#cache = new Map(fileData);
                 console.verbose.ok(`Loaded cachedData.json with ${this.#cache.size} entries.`);
             } catch (error) {
-                console.error(`Failed to load cachedData.json with message: ${(error as Error).message}`);
-                console.error('Since this is not a critical file, it will be reset.');
+                console.warn(`Failed to load cachedData.json with message: ${(error as Error).message}`);
+                console.warn('Since this is not a critical file, it will be reset.');
                 await resetCacheFile();
             }
         }
